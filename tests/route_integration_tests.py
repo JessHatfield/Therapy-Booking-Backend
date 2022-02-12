@@ -26,10 +26,12 @@ class API_Integration_Tests(unittest.TestCase):
         db.drop_all()
         self.app_context.pop()
 
-    def test_api_running_and_queryable(self):
+    def test_graphql_endpoint_returns_query_result(self):
         endpoint=f'{TestConfig.API_DOMAIN}/graphql'
         response=self.app.post(endpoint,json={"query":"query{appointments{id,therapistId,specialism}}"})
+        expected_response_body={"data":{"appointments":[]}}
         self.assertEqual(response.status_code,200)
+        self.assertEqual(response.json,expected_response_body)
 
 
 
