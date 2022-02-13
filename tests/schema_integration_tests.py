@@ -40,11 +40,44 @@ class TherapistQueryAndFilterTests(unittest.TestCase):
 
     def test_query_for_all_fields(self):
         schema = graphene.Schema(query=Query)
-        result = schema.execute()
+        result = schema.execute("""
+           {
+              therapists {
+                edges {
+                  node {
+                    therapistId
+                    firstName
+                    lastName
+                    specialisms {
+                      edges {
+                        node {
+                          specialismId
+                          specialismName
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+           }
+        """)
+
+        self.assertEqual(result.data, {'therapists': {'edges': [{'node': {'therapistId': '1', 'firstName': 'jeff',
+                                                                          'lastName': 'smith', 'specialisms': {
+                'edges': [{'node': {'specialismId': '2', 'specialismName': 'ADHD'}},
+                          {'node': {'specialismId': '1', 'specialismName': 'Addiction'}}]}}}, {
+                                                                    'node': {'therapistId': '2', 'firstName': 'jane',
+                                                                             'lastName': 'smith', 'specialisms': {
+                                                                            'edges': [{'node': {'specialismId': '4',
+                                                                                                'specialismName': 'Divorce'}},
+                                                                                      {'node': {'specialismId': '5',
+                                                                                                'specialismName': 'Sexuality'}},
+                                                                                      {'node': {'specialismId': '3',
+                                                                                                'specialismName': 'CBT'}}]}}}]}})
 
     def test_filter_specialismsIn_single_option(self):
         schema = graphene.Schema(query=Query)
-        result=schema.execute()
+        result = schema.execute()
 
 
 class AppointmentsQueryAndFilterTests(unittest.TestCase):

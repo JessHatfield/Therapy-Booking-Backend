@@ -21,7 +21,7 @@ class Appointment(db.Model):
     start_time_unix_seconds = db.Column(db.Integer)
     duration_seconds = db.Column(db.Integer)
     type = db.Column(db.Text)
-    therapist_id=db.Column(db.Integer,db.ForeignKey('therapist.therapist_id'),nullable=False)
+    therapist_id=db.Column(db.Integer,db.ForeignKey('therapist.therapist_id'),nullable=True)
 
     def __repr__(self):
         return f"<User {self.id}>"
@@ -34,15 +34,16 @@ class Therapist(db.Model):
     therapist_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     first_name = db.Column(db.Text, nullable=False)
     last_name = db.Column(db.Text, nullable=False)
-    appointments=db.relationship('Appointment',backref='therapist',lazy=True,primaryjoin="Appointment.therapist_id==Therapist.therapist_id")
-
+    appointments=db.relationship('Appointment',backref='therapists',lazy=True,primaryjoin="Appointment.therapist_id==Therapist.therapist_id")
+    specialisms = db.relationship('Specialism', secondary=SpecialismsForTherapists, lazy='subquery',
+                                 backref=db.backref('therapists', lazy=True))
 
 
 class Specialism(db.Model):
     ___tablename__ = "Specialisms"
     specialism_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     specialism_name = db.Column(db.Text, nullable=False)
-    therapists = db.relationship('Therapist', secondary=SpecialismsForTherapists, lazy='subquery',
-                                 backref=db.backref('therapists', lazy=True))
+    # therapists = db.relationship('Therapist', secondary=SpecialismsForTherapists, lazy='subquery',
+    #                              backref=db.backref('therapists', lazy=True))
 
 

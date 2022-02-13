@@ -17,15 +17,20 @@ def insert_appointments_and_therapists(db):
     sexuality_specialism = Specialism(specialism_name="Sexuality")
 
     therapist_jeff = Therapist(first_name="jeff", last_name="smith")
-    therapist_jeff.specialisms = [addiction_specialism, adhd_specialism]
+    therapist_jeff.specialisms.append(addiction_specialism)
+    therapist_jeff.specialisms.append(adhd_specialism)
+
 
     therapist_jane = Therapist(first_name="jane", last_name="smith")
-    therapist_jane.specialisms = [cbt_specialism, divorce_specialism, sexuality_specialism]
+    therapist_jane.specialisms.append(cbt_specialism)
+    therapist_jane.specialisms.append(divorce_specialism)
+    therapist_jane.specialisms.append(sexuality_specialism)
 
-    appointment_sun_am.therapist = therapist_jeff
-    appointment_sun_pm.therapist = therapist_jane
+    appointment_sun_am.therapists=therapist_jeff
+    appointment_sun_pm.therapists=therapist_jane
     db.session.add_all([appointment_sun_am, appointment_sun_pm])
     db.session.commit()
+
 
 
 
