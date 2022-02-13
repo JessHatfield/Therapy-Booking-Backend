@@ -43,7 +43,7 @@ class Specialism(db.Model):
     ___tablename__ = "Specialisms"
     specialism_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     specialism_name = db.Column(db.Text, nullable=False)
-    # therapists = db.relationship('Therapist', secondary=SpecialismsForTherapists, lazy='subquery',
-    #                              backref=db.backref('therapists', lazy=True))
+
+
 
 
