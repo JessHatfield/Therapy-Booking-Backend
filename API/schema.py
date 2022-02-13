@@ -61,27 +61,12 @@ class AppointmentsFilter(FilterSet):
         therapists = cls.aliased(query, TherapistModel, name='member_of')
         specialisms = cls.aliased(query, SpecialismModel, name="specialism_of")
 
-        query = query.join(therapists, and_(AppointmentModel.therapist_id == therapists.therapist_id,))
-        query=query.join(specialisms,therapists.specialisms)
+        query = query.join(therapists, and_(AppointmentModel.therapist_id == therapists.therapist_id, )).join(
+            specialisms, therapists.specialisms)
 
-        return query, specialisms.specialism_name == "ADHD"
+        return query, specialisms.specialism_name.in_(value)
 
-        # #alias is required for self-joins! https://stackoverflow.com/questions/5350033/usage-of-aliased-in-sqlalchemy-orm
-        #  appointments=cls.aliased(query,AppointmentModel,name="has_specialism")
-        #
-        #  query=query.outerjoin(appointments,and_(appointments.type=="one-off"))
-        #  # specialisms = db.session.query(SpecialismModel.specialism_id).filter(
-        #  #     SpecialismModel.specialism_name == "Sexuality")
-        #
-        #  #get the therapists for these specialisms
-        #
-        #  filter_=appointments.appointment_id.isnot(1)
-        # # qualified_therapists=TherapistModel.query.filter(TherapistModel.specialisms.any(specialism_name="Sexuality")).
-        #
 
-        # get the appointments for the therapists
-
-        return query, filter_
 
 
 class Query(graphene.ObjectType):

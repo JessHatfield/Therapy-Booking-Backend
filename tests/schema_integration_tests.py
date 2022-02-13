@@ -59,25 +59,69 @@ class TherapistQueryAndFilterTests(unittest.TestCase):
                   }
                 }
               }
-           }
+            }
         """)
 
-        self.assertEqual(result.data, {'therapists': {'edges': [{'node': {'therapistId': '1', 'firstName': 'jeff',
-                                                                          'lastName': 'smith', 'specialisms': {
-                'edges': [{'node': {'specialismId': '2', 'specialismName': 'ADHD'}},
-                          {'node': {'specialismId': '1', 'specialismName': 'Addiction'}}]}}}, {
-                                                                    'node': {'therapistId': '2', 'firstName': 'jane',
-                                                                             'lastName': 'smith', 'specialisms': {
-                                                                            'edges': [{'node': {'specialismId': '4',
-                                                                                                'specialismName': 'Divorce'}},
-                                                                                      {'node': {'specialismId': '5',
-                                                                                                'specialismName': 'Sexuality'}},
-                                                                                      {'node': {'specialismId': '3',
-                                                                                                'specialismName': 'CBT'}}]}}}]}})
+        self.assertEqual(result.data, {"therapists": {
+            "edges": [
+                {
+                    "node": {
+                        "therapistId": "1",
+                        "firstName": "jeff",
+                        "lastName": "smith",
+                        "specialisms": {
+                            "edges": [
+                                {
+                                    "node": {
+                                        "specialismId": "1",
+                                        "specialismName": "Addiction"
+                                    }
+                                },
+                                {
+                                    "node": {
+                                        "specialismId": "2",
+                                        "specialismName": "ADHD"
+                                    }
+                                }
 
-    def test_filter_specialismsIn_single_option(self):
-        schema = graphene.Schema(query=Query)
-        result = schema.execute()
+                            ]
+                        }
+                    }
+                },
+                {
+                    "node": {
+                        "therapistId": "2",
+                        "firstName": "jane",
+                        "lastName": "smith",
+                        "specialisms": {
+                            "edges": [
+                                {
+                                    "node": {
+                                        "specialismId": "4",
+                                        "specialismName": "Divorce"
+                                    }
+                                },
+                                {
+                                    "node": {
+                                        "specialismId": "5",
+                                        "specialismName": "Sexuality"
+                                    }
+                                },
+                                {
+                                    "node": {
+                                        "specialismId": "3",
+                                        "specialismName": "CBT"
+                                    }
+                                }
+
+                            ]
+                        }
+                    }
+                }
+            ]
+        }})
+
+
 
 
 class AppointmentsQueryAndFilterTests(unittest.TestCase):
@@ -238,6 +282,153 @@ class AppointmentsQueryAndFilterTests(unittest.TestCase):
                      'durationSeconds': 3600,
                      'therapistId': 2,
                      'type': 'consultation'}}]}})
+
+    def test_filter_specialismsIn_single_option(self):
+        schema = graphene.Schema(query=Query)
+        result = schema.execute("""
+            {
+          appointments(filters: {hasSpecialisms: ["ADHD"]}) {
+            edges {
+              node {
+                appointmentId
+                type
+                startTimeUnixSeconds
+                durationSeconds
+                therapists {
+                  firstName
+                  lastName
+                  specialisms {
+                    edges {
+                      node {
+                        specialismName
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        """)
+        self.assertEqual(result.data, {"appointments": {
+            "edges": [
+                {
+                    "node": {
+                        "appointmentId": "1",
+                        "type": "one-off",
+                        "startTimeUnixSeconds": 1644747572,
+                        "durationSeconds": 3600,
+                        "therapists": {
+                            "firstName": "jeff",
+                            "lastName": "smith",
+                            "specialisms": {
+                                "edges": [
+                                    {
+                                        "node": {
+                                            "specialismName": "Addiction"
+                                        }
+                                    },
+                                    {
+                                        "node": {
+                                            "specialismName": "ADHD"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            ]
+        }})
+
+    def test_filter_specialismsIn_AllOptions(self):
+        schema = graphene.Schema(query=Query)
+        result = schema.execute("""
+            {
+              appointments(filters: {hasSpecialisms: ["Addiction","ADHD","CBT","Divorce","Sexuality"]}) {
+                edges {
+                  node {
+                    appointmentId
+                    type
+                    startTimeUnixSeconds
+                    durationSeconds
+                    therapists {
+                      firstName
+                      lastName
+                      specialisms {
+                        edges {
+                          node {
+                            specialismName
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+        """)
+        self.assertEqual(result.data, {"appointments": {
+            "edges": [
+                {
+                    "node": {
+                        "appointmentId": "1",
+                        "type": "one-off",
+                        "startTimeUnixSeconds": 1644747572,
+                        "durationSeconds": 3600,
+                        "therapists": {
+                            "firstName": "jeff",
+                            "lastName": "smith",
+                            "specialisms": {
+                                "edges": [
+                                    {
+                                        "node": {
+                                            "specialismName": "Addiction"
+                                        }
+                                    },
+                                    {
+                                        "node": {
+                                            "specialismName": "ADHD"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                },
+                {
+                    "node": {
+                        "appointmentId": "2",
+                        "type": "consultation",
+                        "startTimeUnixSeconds": 1644780000,
+                        "durationSeconds": 3600,
+                        "therapists": {
+                            "firstName": "jane",
+                            "lastName": "smith",
+                            "specialisms": {
+                                "edges": [
+                                    {
+                                        "node": {
+                                            "specialismName": "CBT"
+                                        }
+                                    },
+                                    {
+                                        "node": {
+                                            "specialismName": "Divorce"
+                                        }
+                                    },
+                                    {
+                                        "node": {
+                                            "specialismName": "Sexuality"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            ]
+        }})
 
 
 if __name__ == '__main__':
