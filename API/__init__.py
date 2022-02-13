@@ -3,7 +3,6 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from API.config import Config
 
-
 db = SQLAlchemy()
 migrate = Migrate()
 
@@ -18,6 +17,7 @@ def create_app(config_class=None):
     db.init_app(app)
     migrate.init_app(app,db)
     app.register_blueprint(route_bp)
+
     return app
 
 
