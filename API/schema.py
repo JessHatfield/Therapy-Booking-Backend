@@ -5,8 +5,7 @@ from graphene_sqlalchemy_filter import FilterSet, FilterableConnectionField
 from API.models import Appointment as AppointmentModel
 from API.models import Therapist as TherapistModel
 from API.models import Specialism as SpecialismModel
-from API import db
-from sqlalchemy import Integer, and_
+from sqlalchemy import  and_
 
 # This file handles the definition of GraphQL Schemas and the resolving of graph querys to our underlying data model
 # graphene_sqlalchemy provides helper methods to query data from SQlAlchemy
@@ -71,12 +70,10 @@ class AppointmentsFilter(FilterSet):
 
 class Query(graphene.ObjectType):
     node = graphene.relay.Node.Field()
-    therapists = SQLAlchemyConnectionField(TherapistsSchema.connection)
-    therapy_specialism = SQLAlchemyConnectionField(SpecialismSchema.connection)
-    # therapy_specialism = FilterableConnectionField(connection=SpecialismSchema, filters=SpecialismFilter(),
-    #                                                sort=SpecialismSchema.sort_argument())
+    # therapists = SQLAlchemyConnectionField(TherapistsSchema.connection)
+    # therapy_specialism = SQLAlchemyConnectionField(SpecialismSchema.connection)
     appointments = FilterableConnectionField(connection=AppointmentsSchema, filters=AppointmentsFilter(),
                                              sort=AppointmentsSchema.sort_argument())
 
 
-schema = graphene.Schema(query=Query, types=[AppointmentsSchema, TherapistsSchema, SpecialismSchema])
+schema = graphene.Schema(query=Query, types=[AppointmentsSchema] )#, TherapistsSchema, SpecialismSchema])

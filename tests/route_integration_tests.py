@@ -97,21 +97,28 @@ class API_Acceptance_Tests(unittest.TestCase):
         """
         endpoint = f'{TestConfig.API_DOMAIN}/graphql'
         response = self.app.post(endpoint, json={"query": """
-            {
-          appointments{
+           {
+  appointments {
+    edges {
+      node {
+        therapists {
+          firstName
+          lastName
+          specialisms {
             edges {
               node {
-                therapists {
-                  firstName
-                  lastName
-                }
-                startTimeUnixSeconds
-                durationSeconds
-                type
+                specialismName
               }
             }
           }
-        }"""})
+        }
+        startTimeUnixSeconds
+        durationSeconds
+        type
+      }
+    }
+  }
+}"""})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json, {
             "data": {
@@ -121,7 +128,21 @@ class API_Acceptance_Tests(unittest.TestCase):
                             "node": {
                                 "therapists": {
                                     "firstName": "jeff",
-                                    "lastName": "smith"
+                                    "lastName": "smith",
+                                    "specialisms": {
+                                        "edges": [
+                                            {
+                                                "node": {
+                                                    "specialismName": "Addiction"
+                                                }
+                                            },
+                                            {
+                                                "node": {
+                                                    "specialismName": "ADHD"
+                                                }
+                                            }
+                                        ]
+                                    }
                                 },
                                 "startTimeUnixSeconds": 1644747572,
                                 "durationSeconds": 3600,
@@ -132,7 +153,26 @@ class API_Acceptance_Tests(unittest.TestCase):
                             "node": {
                                 "therapists": {
                                     "firstName": "jane",
-                                    "lastName": "smith"
+                                    "lastName": "smith",
+                                    "specialisms": {
+                                        "edges": [
+                                            {
+                                                "node": {
+                                                    "specialismName": "CBT"
+                                                }
+                                            },
+                                            {
+                                                "node": {
+                                                    "specialismName": "Divorce"
+                                                }
+                                            },
+                                            {
+                                                "node": {
+                                                    "specialismName": "Sexuality"
+                                                }
+                                            }
+                                        ]
+                                    }
                                 },
                                 "startTimeUnixSeconds": 1644780000,
                                 "durationSeconds": 3600,
@@ -140,9 +180,7 @@ class API_Acceptance_Tests(unittest.TestCase):
                             }
                         }
                     ]
-                }
-            }
-        })
+                }}})
 
     def test_graphql_endpoint_returns_required_appointment_fields_with_all_filters(self):
         """
