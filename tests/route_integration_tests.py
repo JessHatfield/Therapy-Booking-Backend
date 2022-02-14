@@ -1,4 +1,8 @@
 import unittest
+from unittest import mock
+
+import flask_graphql_auth.decorators
+import jwt
 
 import mock_data_generation
 from API import create_app, db, Config
@@ -15,6 +19,63 @@ class TestConfig(Config):
     API_DOMAIN = 'http://127.0.0.1:5000'
 
 
+class Authentication_Integration_Tests(unittest.TestCase):
+
+    def setUp(self):
+        self.app = create_app(TestConfig)
+        self.app_context = self.app.app_context()
+        self.app_context.push()
+        self.app = self.app.test_client()
+        db.create_all()
+        mock_data_generation.insert_appointments_and_therapists(db)
+        mock_data_generation.insert_api_users(db)
+
+    def tearDown(self):
+        db.session.remove()
+        db.drop_all()
+        self.app_context.pop()
+
+    def test_can_generate_access_token_and_refresh_token_for_username_and_password_and_then_access_api(self):
+        """Tests that given a prexisting username and password an access token and refreshToken can be generated via graphQL Mutation
+           Value of the access token and refresh token are different each time function is called. W
+        """
+
+        endpoint = f'{TestConfig.API_DOMAIN}/graphql'
+        response = self.app.post(endpoint, json={"query": """
+            mutation{auth(password:"password",username:"test_user"){
+              accessToken
+              refreshToken}
+            }
+        """})
+        self.assertEqual(response.status_code, 200)
+
+        access_token_generated = response.json['data']['auth']['accessToken']
+
+        response = self.app.post(endpoint, headers={"authorization": f"Bearer {access_token_generated}"}, json={"query": """
+                  {appointments{edges{node{startTimeUnixSeconds}}}}
+          """})
+
+        self.assertEqual(response.json, {'data': {'appointments': {
+            'edges': [{'node': {'startTimeUnixSeconds': 1644747572}},
+                      {'node': {'startTimeUnixSeconds': 1644780000}}]}}})
+
+    def test_unauthorized_requests_are_rejected(self):
+        """Tests that given a prexisting username and password an access token and refreshToken can be generated via graphQL Mutation
+           Value of the access token and refresh token are different each time function is called. W
+        """
+
+        endpoint = f'{TestConfig.API_DOMAIN}/graphql'
+
+
+        response = self.app.post(endpoint, headers={"authorization": f"Bearer InvalidToken"}, json={"query": """
+                     {appointments{edges{node{startTimeUnixSeconds}}}}
+             """})
+
+        self.assertEqual(response.json, {'data': {'appointments': {
+            'edges': [{'node': {'startTimeUnixSeconds': 1644747572}},
+                      {'node': {'startTimeUnixSeconds': 1644780000}}]}}})
+
+
 class API_Integration_Tests(unittest.TestCase):
 
     def setUp(self):
@@ -29,7 +90,8 @@ class API_Integration_Tests(unittest.TestCase):
         db.drop_all()
         self.app_context.pop()
 
-    def test_graphql_endpoint_returns_empty_query_result(self):
+    @mock.patch('flask_graphql_auth.decorators.verify_jwt_in_argument')
+    def test_graphql_endpoint_returns_empty_query_result(self, *args):
         """
         checks to see that our endpoint returns an empty data structure when no database rows exist
         """
@@ -38,15 +100,14 @@ class API_Integration_Tests(unittest.TestCase):
             "query": "{appointments{"
                      "edges{"
                      "node{"
-                     "id,"
                      "startTimeUnixSeconds,"
                      "durationSeconds,"
-                     "therapistId,"
-                     "type,specialism""}}}}"})
+                     "}}}}"})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json, {"data": {"appointments": {'edges': []}}})
 
-    def test_graphql_endpoint_returns_error_response_for_non_existent_object(self):
+    @mock.patch('flask_graphql_auth.decorators.verify_jwt_in_argument')
+    def test_graphql_endpoint_returns_error_response_for_non_existent_object(self, *args):
         """
         Checks to see that error messages are being returned from Graphene via our endpoint
         """
@@ -57,7 +118,8 @@ class API_Integration_Tests(unittest.TestCase):
             {'message': 'Cannot query field "non_existent_object" on type "Query".',
              'locations': [{'line': 1, 'column': 7}]}]})
 
-    def test_graphql_endpoint_returns_error_response_for_non_existent_field(self):
+    @mock.patch('flask_graphql_auth.decorators.verify_jwt_in_argument')
+    def test_graphql_endpoint_returns_error_response_for_non_existent_field(self, *args):
         """
         Checks to see that error messages are being returned from GraphQL-Core
         """
@@ -65,7 +127,7 @@ class API_Integration_Tests(unittest.TestCase):
         response = self.app.post(endpoint, json={"query": "query{appointments{non_existent_field}}"})
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json, {'errors': [
-            {'message': 'Cannot query field "non_existent_field" on type "AppointmentsConnection".',
+            {'message': 'Cannot query field "non_existent_field" on type "AppointmentsSchemaConnection".',
              'locations': [{'line': 1, 'column': 20}]}]})
 
 
@@ -85,7 +147,8 @@ class API_Acceptance_Tests(unittest.TestCase):
         db.drop_all()
         self.app_context.pop()
 
-    def test_graphql_endpoint_returns_required_appointment_fields(self):
+    @mock.patch('flask_graphql_auth.decorators.verify_jwt_in_argument')
+    def test_graphql_endpoint_returns_required_appointment_fields(self, *args):
         """
         Checks to see that the user can retrieve
             *Therapists Name
@@ -182,7 +245,8 @@ class API_Acceptance_Tests(unittest.TestCase):
                     ]
                 }}})
 
-    def test_graphql_endpoint_returns_required_appointment_fields_with_all_filters(self):
+    @mock.patch('flask_graphql_auth.decorators.verify_jwt_in_argument')
+    def test_graphql_endpoint_returns_required_appointment_fields_with_all_filters(self, *args):
         """
         Checks to see that the user can retrieve
             *Therapists Name
@@ -198,7 +262,7 @@ class API_Acceptance_Tests(unittest.TestCase):
         endpoint = f'{TestConfig.API_DOMAIN}/graphql'
         response = self.app.post(endpoint, json={"query": """
            {
-              appointments(filters: {hasSpecialisms: ["ADHD"], type: "one-off", startTimeUnixSecondsRange: {begin: 1644747500, end: 1644790000}}) {
+              appointments(filters: {hasSpecialisms: ["ADHD"], type: "one-off", startTimeUnixSecondsRange: {begin: 1644747500, end: 1644790000}},sort) {
                 edges {
                   node {
                     therapists {

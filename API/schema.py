@@ -1,11 +1,17 @@
 import graphene
-from graphene_sqlalchemy import SQLAlchemyObjectType, SQLAlchemyConnectionField
+from graphene_sqlalchemy import SQLAlchemyObjectType
 from graphene_sqlalchemy_filter import FilterSet, FilterableConnectionField
 
+from API.auth import query_header_jwt_required
 from API.models import Appointment as AppointmentModel
 from API.models import Therapist as TherapistModel
 from API.models import Specialism as SpecialismModel
-from sqlalchemy import  and_
+from sqlalchemy import and_
+from API.mutations import Mutation
+
+
+from functools import wraps
+
 
 # This file handles the definition of GraphQL Schemas and the resolving of graph querys to our underlying data model
 # graphene_sqlalchemy provides helper methods to query data from SQlAlchemy
@@ -66,14 +72,56 @@ class AppointmentsFilter(FilterSet):
         return query, specialisms.specialism_name.in_(value)
 
 
+class MessageField(graphene.ObjectType):
+    message = graphene.String()
+
+
+class ErrorType(graphene.Scalar):
+    @staticmethod
+    def serialize(errors):
+        if isinstance(errors, dict):
+            if errors.get("__all__", False):
+                errors["non_field_errors"] = errors.pop("__all__")
+            return errors
+        raise Exception("`errors` should be dict!")
+
+
 
 
 class Query(graphene.ObjectType):
+    '''
+    https://docs.graphene-python.org/en/latest/types/objecttypes/
+    Graphene ObjectType is the building block used to define the relationship between Fields in your Schema and how their data is retrieved.
+        Each attribute of an object type represents a Field
+        Each Field has a resolver method to fetch data
+        The resolver method name should match the field name
+    '''
     node = graphene.relay.Node.Field()
-    # therapists = SQLAlchemyConnectionField(TherapistsSchema.connection)
-    # therapy_specialism = SQLAlchemyConnectionField(SpecialismSchema.connection)
+    errors=graphene.Field(ErrorType)
     appointments = FilterableConnectionField(connection=AppointmentsSchema, filters=AppointmentsFilter(),
-                                             sort=AppointmentsSchema.sort_argument())
+                                         sort=AppointmentsSchema.sort_argument())
 
 
-schema = graphene.Schema(query=Query, types=[AppointmentsSchema] )#, TherapistsSchema, SpecialismSchema])
+    @staticmethod
+    @query_header_jwt_required
+    def resolve_appointments(parent, info, **kwargs):
+        """
+        Generates an object representing one or more appointments and returns to graphene
+        :param parent: The value object returned from the resolver of the parent field
+        :param info: The GraphQL execution info. Meta info about the current GraphQL Query. Per Request Context Variable
+        :param kwargs: Any arguments defined in the field itself
+        :return: An object representing one or more appointments
+        """
+        return FilterableConnectionField(connection=AppointmentsSchema, filters=AppointmentsFilter(),
+                                         sort=AppointmentsSchema.sort_argument()).get_query(AppointmentModel, info)
+
+
+# flask-graphql-auth checks for jwt in header when the resolver function is run
+# before the resolver function is run the decorator is executed
+# the decorated function extracts the token from the Flask Request variable
+# if the headers are found the decorator allows the resolver function to continue
+# if it fails to auth it returns an AuthInfoField instead of the data which was to be resolved
+
+
+# constructs the complete Graphql Schema
+schema = graphene.Schema(query=Query, types=[AppointmentsSchema], mutation=Mutation)

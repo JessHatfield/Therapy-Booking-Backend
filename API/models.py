@@ -21,22 +21,22 @@ class Appointment(db.Model):
     start_time_unix_seconds = db.Column(db.Integer)
     duration_seconds = db.Column(db.Integer)
     type = db.Column(db.Text)
-    therapist_id=db.Column(db.Integer,db.ForeignKey('therapist.therapist_id'),nullable=True)
+    therapist_id = db.Column(db.Integer, db.ForeignKey('therapist.therapist_id'), nullable=True)
 
     def __repr__(self):
         return f"<User {self.id}>"
 
 
-
-#Person
+# Person
 class Therapist(db.Model):
-    ___tablename__="Therapists"
+    ___tablename__ = "Therapists"
     therapist_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     first_name = db.Column(db.Text, nullable=False)
     last_name = db.Column(db.Text, nullable=False)
-    appointments=db.relationship('Appointment',backref='therapists',lazy=True,primaryjoin="Appointment.therapist_id==Therapist.therapist_id")
+    appointments = db.relationship('Appointment', backref='therapists', lazy=True,
+                                   primaryjoin="Appointment.therapist_id==Therapist.therapist_id")
     specialisms = db.relationship('Specialism', secondary=SpecialismsForTherapists, lazy='subquery',
-                                 backref=db.backref('therapists', lazy=True))
+                                  backref=db.backref('therapists', lazy=True))
 
 
 class Specialism(db.Model):
@@ -45,5 +45,10 @@ class Specialism(db.Model):
     specialism_name = db.Column(db.Text, nullable=False)
 
 
-
+class User(db.Model):
+    __tablename__ = "Users"
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(20), unique=True, nullable=False)
+    password = db.Column(db.String(60), nullable=False)
+    email = db.Column(db.String(100))
 

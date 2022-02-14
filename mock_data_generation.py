@@ -1,4 +1,11 @@
 
+def insert_api_users(db):
+    from API.models import User
+
+    test_user=User(username="test_user",password="password",email="test@test.com")
+    db.session.add(test_user)
+    db.session.commit()
+
 def insert_appointments_and_therapists(db):
     from API.models import Appointment, Therapist, Specialism
 
@@ -47,6 +54,7 @@ def generate_fake_data_for_development_db():
         db.drop_all()
         db.create_all()
         insert_appointments_and_therapists(db)
+        insert_api_users(db)
         print("Old Records Have Been Wiped And New Mock Records Created")
     else:
         print("You Did Not Select 'Y' - Exiting Function")
