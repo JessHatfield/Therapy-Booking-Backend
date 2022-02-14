@@ -47,12 +47,25 @@ class Authentication_Integration_Tests(unittest.TestCase):
         access_token_generated = response.json['data']['auth']['accessToken']
 
         response = self.app.post(endpoint, headers={"authorization": f"Bearer {access_token_generated}"}, json={"query": """
-                  {appointments{edges{node{startTimeUnixSeconds}}}}
+                              {
+              appointments {
+                startTimeUnixSeconds
+              }
+            }
           """})
 
-        self.assertEqual(response.json, {'data': {'appointments': {
-            'edges': [{'node': {'startTimeUnixSeconds': 1644747572}},
-                      {'node': {'startTimeUnixSeconds': 1644780000}}]}}})
+        self.assertEqual(response.json, {
+            "data": {
+                "appointments": [
+                    {
+                        "startTimeUnixSeconds": 1644747572
+                    },
+                    {
+                        "startTimeUnixSeconds": 1644780000
+                    }
+                ]
+            }
+        })
 
     def test_unauthorized_requests_are_rejected(self):
         """Tests that given a prexisting username and password an access token and refreshToken can be generated via graphQL Mutation
@@ -62,7 +75,11 @@ class Authentication_Integration_Tests(unittest.TestCase):
         endpoint = f'{TestConfig.API_DOMAIN}/graphql'
 
         response = self.app.post(endpoint, headers={"authorization": f"Bearer InvalidToken"}, json={"query": """
-                     {appointments{edges{node{startTimeUnixSeconds}}}}
+                                     {
+                  appointments {
+                    startTimeUnixSeconds
+                  }
+                }
              """})
 
         self.assertEqual(response.json, {'errors': [
@@ -94,21 +111,26 @@ class Authentication_Integration_Tests(unittest.TestCase):
         # make a protected request with new access token
         final_request = self.app.post(endpoint, headers={"authorization": f"Bearer {new_access_token_generated}"},
                                       json={"query": """
-            {
-              appointments {
-                edges {
-                  node {
-                    startTimeUnixSeconds
-                  }
-                }
-              }
-            }
-        """})
+                                    {
+                                      appointments {
+                                            startTimeUnixSeconds
+                                          }
+                                        }
+                            """})
 
         self.assertEqual(final_request.status_code, 200)
-        self.assertEqual(final_request.json, {'data': {'appointments': {
-            'edges': [{'node': {'startTimeUnixSeconds': 1644747572}},
-                      {'node': {'startTimeUnixSeconds': 1644780000}}]}}})
+        self.assertEqual(final_request.json, {
+            "data": {
+                "appointments": [
+                    {
+                        "startTimeUnixSeconds": 1644747572
+                    },
+                    {
+                        "startTimeUnixSeconds": 1644780000
+                    }
+                ]
+            }
+        })
 
 
 class API_Integration_Tests(unittest.TestCase):
@@ -133,14 +155,16 @@ class API_Integration_Tests(unittest.TestCase):
         """
         endpoint = f'{TestConfig.API_DOMAIN}/graphql'
         response = self.app.post(endpoint, json={
-            "query": "{appointments{"
-                     "edges{"
-                     "node{"
-                     "startTimeUnixSeconds,"
-                     "durationSeconds,"
-                     "}}}}"})
+            "query": """
+            {
+              appointments {
+                startTimeUnixSeconds
+                durationSeconds
+              }
+            }
+            """})
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json, {"data": {"appointments": {'edges': []}}})
+        self.assertEqual(response.json, {"data": {"appointments": []}})
 
     @mock.patch('API.authentication.decorators._extract_header_token_value')
     @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
@@ -165,7 +189,7 @@ class API_Integration_Tests(unittest.TestCase):
         response = self.app.post(endpoint, json={"query": "query{appointments{non_existent_field}}"})
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json, {'errors': [
-            {'message': 'Cannot query field "non_existent_field" on type "AppointmentsSchemaConnection".',
+            {'message': 'Cannot query field "non_existent_field" on type "AppointmentsSchema".',
              'locations': [{'line': 1, 'column': 20}]}]})
 
 
@@ -199,90 +223,83 @@ class API_Acceptance_Tests(unittest.TestCase):
         """
         endpoint = f'{TestConfig.API_DOMAIN}/graphql'
         response = self.app.post(endpoint, json={"query": """
-           {
-  appointments {
-    edges {
-      node {
-        therapists {
-          firstName
-          lastName
-          specialisms {
-            edges {
-              node {
-                specialismName
+          {
+          appointments {
+            therapists {
+              firstName
+              lastName
+              specialisms {
+                edges {
+                  node {
+                    specialismName
+                  }
+                }
               }
             }
+            startTimeUnixSeconds
+            durationSeconds
+            type
           }
         }
-        startTimeUnixSeconds
-        durationSeconds
-        type
-      }
-    }
-  }
-}"""})
+        """})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json, {
             "data": {
-                "appointments": {
-                    "edges": [
-                        {
-                            "node": {
-                                "therapists": {
-                                    "firstName": "jeff",
-                                    "lastName": "smith",
-                                    "specialisms": {
-                                        "edges": [
-                                            {
-                                                "node": {
-                                                    "specialismName": "Addiction"
-                                                }
-                                            },
-                                            {
-                                                "node": {
-                                                    "specialismName": "ADHD"
-                                                }
-                                            }
-                                        ]
+                "appointments": [
+                    {
+                        "therapists": {
+                            "firstName": "jeff",
+                            "lastName": "smith",
+                            "specialisms": {
+                                "edges": [
+                                    {
+                                        "node": {
+                                            "specialismName": "Addiction"
+                                        }
+                                    },
+                                    {
+                                        "node": {
+                                            "specialismName": "ADHD"
+                                        }
                                     }
-                                },
-                                "startTimeUnixSeconds": 1644747572,
-                                "durationSeconds": 3600,
-                                "type": "one-off"
+                                ]
                             }
                         },
-                        {
-                            "node": {
-                                "therapists": {
-                                    "firstName": "jane",
-                                    "lastName": "smith",
-                                    "specialisms": {
-                                        "edges": [
-                                            {
-                                                "node": {
-                                                    "specialismName": "CBT"
-                                                }
-                                            },
-                                            {
-                                                "node": {
-                                                    "specialismName": "Divorce"
-                                                }
-                                            },
-                                            {
-                                                "node": {
-                                                    "specialismName": "Sexuality"
-                                                }
-                                            }
-                                        ]
+                        "startTimeUnixSeconds": 1644747572,
+                        "durationSeconds": 3600,
+                        "type": "one-off"
+                    },
+                    {
+                        "therapists": {
+                            "firstName": "jane",
+                            "lastName": "smith",
+                            "specialisms": {
+                                "edges": [
+                                    {
+                                        "node": {
+                                            "specialismName": "CBT"
+                                        }
+                                    },
+                                    {
+                                        "node": {
+                                            "specialismName": "Divorce"
+                                        }
+                                    },
+                                    {
+                                        "node": {
+                                            "specialismName": "Sexuality"
+                                        }
                                     }
-                                },
-                                "startTimeUnixSeconds": 1644780000,
-                                "durationSeconds": 3600,
-                                "type": "consultation"
+                                ]
                             }
-                        }
-                    ]
-                }}})
+                        },
+                        "startTimeUnixSeconds": 1644780000,
+                        "durationSeconds": 3600,
+                        "type": "consultation"
+                    }
+                ]
+            }
+        })
 
     @mock.patch('API.authentication.decorators._extract_header_token_value')
     @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
@@ -303,60 +320,52 @@ class API_Acceptance_Tests(unittest.TestCase):
         endpoint = f'{TestConfig.API_DOMAIN}/graphql'
         response = self.app.post(endpoint, json={"query": """
            {
-              appointments(filters: {hasSpecialisms: ["ADHD"], type: "one-off", startTimeUnixSecondsRange: {begin: 1644747500, end: 1644790000}},sort) {
-                edges {
-                  node {
-                    therapists {
-                      firstName
-                      lastName
-                      specialisms {
-                        edges {
-                          node {
-                            specialismName
-                          }
-                        }
+              appointments(filters: {hasSpecialisms: ["ADHD"], type: "one-off", startTimeUnixSecondsRange: {begin: 1644747500, end: 1644790000}}) {
+                therapists {
+                  firstName
+                  lastName
+                  specialisms {
+                    edges {
+                      node {
+                        specialismName
                       }
                     }
-                    startTimeUnixSeconds
-                    durationSeconds
-                    type
                   }
                 }
+                startTimeUnixSeconds
+                durationSeconds
+                type
               }
             }
         """})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json, {
             "data": {
-                "appointments": {
-                    "edges": [
-                        {
-                            "node": {
-                                "therapists": {
-                                    "firstName": "jeff",
-                                    "lastName": "smith",
-                                    "specialisms": {
-                                        "edges": [
-                                            {
-                                                "node": {
-                                                    "specialismName": "Addiction"
-                                                }
-                                            },
-                                            {
-                                                "node": {
-                                                    "specialismName": "ADHD"
-                                                }
-                                            }
-                                        ]
+                "appointments": [
+                    {
+                        "therapists": {
+                            "firstName": "jeff",
+                            "lastName": "smith",
+                            "specialisms": {
+                                "edges": [
+                                    {
+                                        "node": {
+                                            "specialismName": "Addiction"
+                                        }
+                                    },
+                                    {
+                                        "node": {
+                                            "specialismName": "ADHD"
+                                        }
                                     }
-                                },
-                                "startTimeUnixSeconds": 1644747572,
-                                "durationSeconds": 3600,
-                                "type": "one-off"
+                                ]
                             }
-                        }
-                    ]
-                }
+                        },
+                        "startTimeUnixSeconds": 1644747572,
+                        "durationSeconds": 3600,
+                        "type": "one-off"
+                    }
+                ]
             }
         })
 

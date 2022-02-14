@@ -71,6 +71,8 @@ class AppointmentsFilter(FilterSet):
         return query, specialisms.specialism_name.in_(value)
 
 
+
+
 class AppointmentMutation(graphene.Mutation):
     appointment = graphene.Field(AppointmentsSchema)
 
@@ -80,6 +82,7 @@ class AppointmentMutation(graphene.Mutation):
         duration_seconds = graphene.Int()
         type = graphene.String()
 
+    @header_must_have_jwt
     def mutate(self, info, therapist_id, start_time_unix_seconds, duration_seconds, type):
         """
         Creates a new appointment for a given therapist. AppointmentMutation is IDEMPOTENT. The exact same appointment cannot be created twice
@@ -92,8 +95,8 @@ class AppointmentMutation(graphene.Mutation):
         """
 
         appointment = AppointmentModel.query.filter_by(therapist_id=therapist_id,
-                                                          start_time_unix_seconds=start_time_unix_seconds,
-                                                          duration_seconds=duration_seconds, type=type).first()
+                                                       start_time_unix_seconds=start_time_unix_seconds,
+                                                       duration_seconds=duration_seconds, type=type).first()
         if appointment:
             return AppointmentMutation(appointment=appointment)
         else:
@@ -131,12 +134,14 @@ class Query(graphene.ObjectType):
     '''
     node = graphene.relay.Node.Field()
     errors = graphene.Field(ErrorType)
-    appointments = FilterableConnectionField(connection=AppointmentsSchema, filters=AppointmentsFilter(),
-                                             sort=AppointmentsSchema.sort_argument())
+    # appointments = FilterableConnectionField(connection=AppointmentsSchema, filters=AppointmentsFilter(),
+    #                                          sort=AppointmentsSchema.sort_argument())
+
+    appointments = graphene.List(AppointmentsSchema, filters=AppointmentsFilter())
 
     @staticmethod
-    @header_must_have_jwt
-    def resolve_appointments(parent, info, **kwargs):
+    # @header_must_have_jwt
+    def resolve_appointments(parent, info, filters=None):
         """
         Generates an object representing one or more appointments and returns to graphene
         :param parent: The value object returned from the resolver of the parent field
@@ -144,8 +149,15 @@ class Query(graphene.ObjectType):
         :param kwargs: Any arguments defined in the field itself
         :return: An object representing one or more appointments
         """
-        return FilterableConnectionField(connection=AppointmentsSchema, filters=AppointmentsFilter(),
-                                         sort=AppointmentsSchema.sort_argument()).get_query(AppointmentModel, info)
+        query = AppointmentModel.query
+        # query=FilterableConnectionField(connection=AppointmentsSchema, filters=AppointmentsFilter(),
+        #                                  sort=AppointmentsSchema.sort_argument()).get_query(AppointmentModel, info)
+
+        if filters is not None:
+            query = AppointmentsFilter.filter(info, query, filters)
+
+        return query
+
 
 
 # constructs the complete Graphql Schema
