@@ -15,9 +15,10 @@ class AuthMutation(graphene.Mutation):
         password = graphene.String()
 
     def mutate(self, info, username, password):
-        user = User.query.filter_by(username=username, password=password).first()
-        print(user)
-        if not user:
+        # username is a unique constraint in our model
+        user = User.query.filter_by(username=username).first()
+        user_password_matches = user.check_password(password=password)
+        if not user or not user_password_matches:
             raise Exception('Authentication Failure : username or password not valid')
         return AuthMutation(
             access_token=create_access_token(username),

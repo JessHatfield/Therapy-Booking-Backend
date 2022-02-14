@@ -2,7 +2,8 @@
 def insert_api_users(db):
     from API.models import User
 
-    test_user=User(username="test_user",password="password",email="test@test.com")
+    test_user=User(username="test_user",email="test@test.com")
+    test_user.set_password("password")
     db.session.add(test_user)
     db.session.commit()
 

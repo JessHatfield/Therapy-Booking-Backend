@@ -5,12 +5,12 @@ import mock_data_generation
 
 import os
 
-# This gives us the root directory for the project
-basedir = os.path.abspath(os.path.dirname(__file__))
-basedir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
 
 
 class TestConfig(Config):
+    basedir = os.path.abspath(os.path.dirname(__file__))
+    basedir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     SQLALCHEMY_DATABASE_URI = f'sqlite:///{basedir}/tests/test_app.db'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     API_DOMAIN = 'http://127.0.0.1:5000'
