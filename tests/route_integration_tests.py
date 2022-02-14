@@ -6,8 +6,6 @@ import mock_data_generation
 import os
 
 
-
-
 class TestConfig(Config):
     basedir = os.path.abspath(os.path.dirname(__file__))
     basedir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -358,6 +356,188 @@ class API_Acceptance_Tests(unittest.TestCase):
                             }
                         }
                     ]
+                }
+            }
+        })
+
+    @mock.patch('API.authentication.decorators._extract_header_token_value')
+    @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
+    def test_appointment_mutate_on_graphql_endpoint(self, *args):
+        endpoint = f'{TestConfig.API_DOMAIN}/graphql'
+        response = self.app.post(endpoint, json={"query": """
+           mutation {
+              appointment(therapistId: 1, startTimeUnixSeconds: 1644874120, durationSeconds: 3600, type: "one-off") {
+                appointment {
+                  appointmentId
+                  startTimeUnixSeconds
+                  durationSeconds
+                  type
+                  therapists {
+                    therapistId
+                    specialisms {
+                      edges {
+                        node {
+                          specialismName
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            """})
+
+        self.assertEqual(response.json, {
+            "data": {
+                "appointment": {
+                    "appointment": {
+                        "appointmentId": '3',
+                        "startTimeUnixSeconds": 1644874120,
+                        "durationSeconds": 3600,
+                        "type": "one-off",
+                        "therapists": {
+                            "therapistId": "1",
+                            "specialisms": {
+                                "edges": [
+                                    {
+                                        "node": {
+                                            "specialismName": "Addiction"
+                                        }
+                                    },
+                                    {
+                                        "node": {
+                                            "specialismName": "ADHD"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        })
+
+    @mock.patch('API.authentication.decorators._extract_header_token_value')
+    @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
+    def test_appointment_mutate_on_graphql_endpoint_idempotent_on_multiple_calls(self, *args):
+        endpoint = f'{TestConfig.API_DOMAIN}/graphql'
+        query = """
+              mutation {
+                 appointment(therapistId: 1, startTimeUnixSeconds: 1644874120, durationSeconds: 3600, type: "one-off") {
+                   appointment {
+                     appointmentId
+                     startTimeUnixSeconds
+                     durationSeconds
+                     type
+                     therapists {
+                       therapistId
+                       specialisms {
+                         edges {
+                           node {
+                             specialismName
+                           }
+                         }
+                       }
+                     }
+                   }
+                 }
+               }
+               """
+        expected_data = {
+            "data": {
+                "appointment": {
+                    "appointment": {
+                        "appointmentId": '3',
+                        "startTimeUnixSeconds": 1644874120,
+                        "durationSeconds": 3600,
+                        "type": "one-off",
+                        "therapists": {
+                            "therapistId": "1",
+                            "specialisms": {
+                                "edges": [
+                                    {
+                                        "node": {
+                                            "specialismName": "Addiction"
+                                        }
+                                    },
+                                    {
+                                        "node": {
+                                            "specialismName": "ADHD"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        # The new appointment is created
+        response = self.app.post(endpoint, json={"query": query})
+
+        self.assertEqual(response.json, expected_data)
+
+        # The same query is sent again
+        response_2 = self.app.post(endpoint, json={"query": query})
+
+        # But no new appointment is created
+        self.assertEqual(response_2.json, expected_data)
+
+        new_appointment = self.app.post(endpoint, json={"query": """
+              mutation {
+                 appointment(therapistId: 2, startTimeUnixSeconds: 1644874120, durationSeconds: 3600, type: "one-off") {
+                   appointment {
+                     appointmentId
+                     startTimeUnixSeconds
+                     durationSeconds
+                     type
+                     therapists {
+                       therapistId
+                       specialisms {
+                         edges {
+                           node {
+                             specialismName
+                           }
+                         }
+                       }
+                     }
+                   }
+                 }
+               }
+               """})
+
+        # an appointment for a different therapist can be created
+        self.assertEqual(new_appointment.json, {
+            "data": {
+                "appointment": {
+                    "appointment": {
+                        "appointmentId": '4',
+                        "startTimeUnixSeconds": 1644874120,
+                        "durationSeconds": 3600,
+                        "type": "one-off",
+                        "therapists": {
+                            "therapistId": "2",
+                            "specialisms": {
+                                "edges": [
+                                    {
+                                        "node": {
+                                            "specialismName": "CBT"
+                                        }
+                                    },
+                                    {
+                                        "node": {
+                                            "specialismName": "Divorce"
+                                        }
+                                    },
+                                    {
+                                        "node": {
+                                            "specialismName": "Sexuality"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
                 }
             }
         })
