@@ -1,11 +1,8 @@
 import unittest
 from unittest import mock
-
-import flask_graphql_auth.decorators
-import jwt
-
-import mock_data_generation
 from API import create_app, db, Config
+import mock_data_generation
+
 import os
 
 # This gives us the root directory for the project
@@ -66,12 +63,52 @@ class Authentication_Integration_Tests(unittest.TestCase):
 
         endpoint = f'{TestConfig.API_DOMAIN}/graphql'
 
-
         response = self.app.post(endpoint, headers={"authorization": f"Bearer InvalidToken"}, json={"query": """
                      {appointments{edges{node{startTimeUnixSeconds}}}}
              """})
 
-        self.assertEqual(response.json, {'data': {'appointments': {
+        self.assertEqual(response.json, {'errors': [
+            {'message': 'Not enough segments', 'locations': [{'line': 2, 'column': 23}], 'path': ['appointments']}],
+            'data': {'appointments': None}})
+
+    def test_access_token_can_be_refreshed_and_then_access_api(self):
+        # gen access token
+
+        endpoint = f'{TestConfig.API_DOMAIN}/graphql'
+        response = self.app.post(endpoint, json={"query": """
+                    mutation{auth(password:"password",username:"test_user"){
+                      accessToken
+                      refreshToken}
+                    }
+                """})
+
+        access_token_generated = response.json['data']['auth']['accessToken']
+        refresh_token_generated = response.json['data']['auth']['refreshToken']
+
+        # generate refresh token
+        response = self.app.post(endpoint,
+                                 json={
+                                     "query": 'mutation{refresh(refreshToken:"' + refresh_token_generated + '"){newToken}}'})
+
+        new_access_token_generated = response.json['data']['refresh']['newToken']
+        self.assertNotEqual(access_token_generated, new_access_token_generated)
+
+        # make a protected request with new access token
+        final_request = self.app.post(endpoint, headers={"authorization": f"Bearer {new_access_token_generated}"},
+                                      json={"query": """
+            {
+              appointments {
+                edges {
+                  node {
+                    startTimeUnixSeconds
+                  }
+                }
+              }
+            }
+        """})
+
+        self.assertEqual(final_request.status_code, 200)
+        self.assertEqual(final_request.json, {'data': {'appointments': {
             'edges': [{'node': {'startTimeUnixSeconds': 1644747572}},
                       {'node': {'startTimeUnixSeconds': 1644780000}}]}}})
 
@@ -90,7 +127,8 @@ class API_Integration_Tests(unittest.TestCase):
         db.drop_all()
         self.app_context.pop()
 
-    @mock.patch('flask_graphql_auth.decorators.verify_jwt_in_argument')
+    @mock.patch('API.authentication.decorators._extract_header_token_value')
+    @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
     def test_graphql_endpoint_returns_empty_query_result(self, *args):
         """
         checks to see that our endpoint returns an empty data structure when no database rows exist
@@ -106,7 +144,8 @@ class API_Integration_Tests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json, {"data": {"appointments": {'edges': []}}})
 
-    @mock.patch('flask_graphql_auth.decorators.verify_jwt_in_argument')
+    @mock.patch('API.authentication.decorators._extract_header_token_value')
+    @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
     def test_graphql_endpoint_returns_error_response_for_non_existent_object(self, *args):
         """
         Checks to see that error messages are being returned from Graphene via our endpoint
@@ -118,7 +157,8 @@ class API_Integration_Tests(unittest.TestCase):
             {'message': 'Cannot query field "non_existent_object" on type "Query".',
              'locations': [{'line': 1, 'column': 7}]}]})
 
-    @mock.patch('flask_graphql_auth.decorators.verify_jwt_in_argument')
+    @mock.patch('API.authentication.decorators._extract_header_token_value')
+    @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
     def test_graphql_endpoint_returns_error_response_for_non_existent_field(self, *args):
         """
         Checks to see that error messages are being returned from GraphQL-Core
@@ -147,7 +187,8 @@ class API_Acceptance_Tests(unittest.TestCase):
         db.drop_all()
         self.app_context.pop()
 
-    @mock.patch('flask_graphql_auth.decorators.verify_jwt_in_argument')
+    @mock.patch('API.authentication.decorators._extract_header_token_value')
+    @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
     def test_graphql_endpoint_returns_required_appointment_fields(self, *args):
         """
         Checks to see that the user can retrieve
@@ -245,7 +286,8 @@ class API_Acceptance_Tests(unittest.TestCase):
                     ]
                 }}})
 
-    @mock.patch('flask_graphql_auth.decorators.verify_jwt_in_argument')
+    @mock.patch('API.authentication.decorators._extract_header_token_value')
+    @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
     def test_graphql_endpoint_returns_required_appointment_fields_with_all_filters(self, *args):
         """
         Checks to see that the user can retrieve
@@ -259,6 +301,7 @@ class API_Acceptance_Tests(unittest.TestCase):
             *Appointment Type
             *Therapist Specialism
         """
+
         endpoint = f'{TestConfig.API_DOMAIN}/graphql'
         response = self.app.post(endpoint, json={"query": """
            {

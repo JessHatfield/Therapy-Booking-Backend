@@ -2,15 +2,12 @@ import graphene
 from graphene_sqlalchemy import SQLAlchemyObjectType
 from graphene_sqlalchemy_filter import FilterSet, FilterableConnectionField
 
-from API.auth import query_header_jwt_required
+from API.authentication import header_must_have_jwt
 from API.models import Appointment as AppointmentModel
 from API.models import Therapist as TherapistModel
 from API.models import Specialism as SpecialismModel
 from sqlalchemy import and_
 from API.mutations import Mutation
-
-
-from functools import wraps
 
 
 # This file handles the definition of GraphQL Schemas and the resolving of graph querys to our underlying data model
@@ -19,8 +16,9 @@ from functools import wraps
 
 # full list of available filter operations can be found here
 # https://github.com/art1415926535/graphene-sqlalchemy-filter#automatically-generated-filters
-ALL_OPERATIONS = ['eq', 'ne', 'like', 'ilike', 'is_null', 'in', 'not_in', 'lt', 'lte', 'gt', 'gte', 'range']
 
+
+ALL_OPERATIONS = ['eq', 'ne', 'like', 'ilike', 'is_null', 'in', 'not_in', 'lt', 'lte', 'gt', 'gte', 'range']
 
 class AppointmentsSchema(SQLAlchemyObjectType):
     class Meta:
@@ -72,9 +70,6 @@ class AppointmentsFilter(FilterSet):
         return query, specialisms.specialism_name.in_(value)
 
 
-class MessageField(graphene.ObjectType):
-    message = graphene.String()
-
 
 class ErrorType(graphene.Scalar):
     @staticmethod
@@ -103,7 +98,7 @@ class Query(graphene.ObjectType):
 
 
     @staticmethod
-    @query_header_jwt_required
+    @header_must_have_jwt
     def resolve_appointments(parent, info, **kwargs):
         """
         Generates an object representing one or more appointments and returns to graphene
@@ -115,12 +110,6 @@ class Query(graphene.ObjectType):
         return FilterableConnectionField(connection=AppointmentsSchema, filters=AppointmentsFilter(),
                                          sort=AppointmentsSchema.sort_argument()).get_query(AppointmentModel, info)
 
-
-# flask-graphql-auth checks for jwt in header when the resolver function is run
-# before the resolver function is run the decorator is executed
-# the decorated function extracts the token from the Flask Request variable
-# if the headers are found the decorator allows the resolver function to continue
-# if it fails to auth it returns an AuthInfoField instead of the data which was to be resolved
 
 
 # constructs the complete Graphql Schema

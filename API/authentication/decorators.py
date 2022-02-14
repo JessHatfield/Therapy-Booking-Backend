@@ -3,9 +3,12 @@ from functools import wraps
 from flask import request
 from flask_graphql_auth.decorators import _extract_header_token_value, verify_jwt_in_argument
 from graphql import GraphQLError
+from API import Config
 
 
-def query_header_jwt_required(fn):
+
+
+def header_must_have_jwt(fn):
     """
     A decorator to protect a query resolver.
 

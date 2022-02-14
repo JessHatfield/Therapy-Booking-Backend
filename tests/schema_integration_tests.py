@@ -1,18 +1,14 @@
 import unittest
 from unittest import mock
-
 from API import create_app, db, Config
 import os
-
 import mock_data_generation
+import graphene
+from API.schema import Query
 
 # This gives us the root directory for the project
 basedir = os.path.abspath(os.path.dirname(__file__))
 basedir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-import graphene
-
-from API.schema import Query
-
 
 # We can test Schemas we have created here and compare the result of a graphQL query with an expected response
 # Model specific tests  live here (can we retrieve all the fields we need successfully can we filter correctly e.t.c)
@@ -43,7 +39,7 @@ class AppointmentsQueryAndFilterTests(unittest.TestCase):
         db.drop_all()
         self.app_context.pop()
 
-    @mock.patch("flask_graphql_auth.decorators._extract_header_token_value")
+
     def test_query_for_all_fields(self,*args):
         schema = graphene.Schema(query=Query)
         result = schema.execute("""
@@ -70,7 +66,8 @@ class AppointmentsQueryAndFilterTests(unittest.TestCase):
                                                                                'therapistId': 2,
                                                                                'type': 'consultation'}}]}})
 
-    def test_filter_appointment_type_equals(self):
+    @mock.patch('API.authentication.decorators.header_must_have_jwt')
+    def test_filter_appointment_type_equals(self,*args):
         schema = graphene.Schema(query=Query)
         result = schema.execute("""
             {
@@ -91,7 +88,9 @@ class AppointmentsQueryAndFilterTests(unittest.TestCase):
                                                                             'durationSeconds': 3600, 'therapistId': 1,
                                                                             'type': 'one-off'}}]}})
 
-    def test_filter_appointment_typeIn_single_option(self):
+    @mock.patch('API.auth._extract_header_token_value')
+    @mock.patch('API.auth.verify_jwt_in_argument')
+    def test_filter_appointment_typeIn_single_option(self,*args):
         schema = graphene.Schema(query=Query)
         result = schema.execute("""
             {
@@ -112,7 +111,9 @@ class AppointmentsQueryAndFilterTests(unittest.TestCase):
                                                                             'durationSeconds': 3600, 'therapistId': 1,
                                                                             'type': 'one-off'}}]}})
 
-    def test_filter_appointment_typeIn_multiple_options(self):
+    @mock.patch('API.auth._extract_header_token_value')
+    @mock.patch('API.auth.verify_jwt_in_argument')
+    def test_filter_appointment_typeIn_multiple_options(self,*args):
         schema = graphene.Schema(query=Query)
         result = schema.execute("""
                 {
@@ -138,7 +139,8 @@ class AppointmentsQueryAndFilterTests(unittest.TestCase):
                                                                                'therapistId': 2,
                                                                                'type': 'consultation'}}]}})
 
-    def test_filter_appointment_in_startTimeUnixSecondsRange_Get_Both_Appointments(self):
+
+    def test_filter_appointment_in_startTimeUnixSecondsRange_Get_Both_Appointments(self,*args):
         """Filters on a Range of unixTimeStamps - The range contains both test appointments created"""
         schema = graphene.Schema(query=Query)
         result = schema.execute("""
@@ -165,7 +167,9 @@ class AppointmentsQueryAndFilterTests(unittest.TestCase):
                                                                                'therapistId': 2,
                                                                                'type': 'consultation'}}]}})
 
-    def test_filter_appointment_in_startTimeUnixSecondsRange_Get_Latest_Appointment(self):
+    @mock.patch('API.auth._extract_header_token_value')
+    @mock.patch('API.auth.verify_jwt_in_argument')
+    def test_filter_appointment_in_startTimeUnixSecondsRange_Get_Latest_Appointment(self,*args):
         """Filters on a Range of unixTimeStamps - The range contains both test appointments created"""
         schema = graphene.Schema(query=Query)
         result = schema.execute("""
@@ -189,7 +193,9 @@ class AppointmentsQueryAndFilterTests(unittest.TestCase):
                      'therapistId': 2,
                      'type': 'consultation'}}]}})
 
-    def test_filter_specialismsIn_single_option(self):
+    @mock.patch('API.auth._extract_header_token_value')
+    @mock.patch('API.auth.verify_jwt_in_argument')
+    def test_filter_specialismsIn_single_option(self,*args):
         schema = graphene.Schema(query=Query)
         result = schema.execute("""
             {
@@ -247,7 +253,9 @@ class AppointmentsQueryAndFilterTests(unittest.TestCase):
             ]
         }})
 
-    def test_filter_specialismsIn_AllOptions(self):
+    @mock.patch('API.auth._extract_header_token_value')
+    @mock.patch('API.auth.verify_jwt_in_argument')
+    def test_filter_specialismsIn_AllOptions(self,*args):
         schema = graphene.Schema(query=Query)
         result = schema.execute("""
             {

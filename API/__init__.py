@@ -4,9 +4,10 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from API.config import Config
 
+
 db = SQLAlchemy()
 migrate = Migrate()
-authentication = GraphQLAuth()
+graph_auth = GraphQLAuth()
 
 
 def create_app(config_class=None):
@@ -18,7 +19,7 @@ def create_app(config_class=None):
     app.config.from_object(config_class)
     db.init_app(app)
     migrate.init_app(app, db)
-    authentication.init_app(app)
+    graph_auth.init_app(app)
     app.register_blueprint(route_bp)
 
     return app
