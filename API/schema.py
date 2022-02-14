@@ -1,5 +1,5 @@
 import graphene
-from graphene_sqlalchemy import SQLAlchemyObjectType
+from graphene_sqlalchemy import SQLAlchemyObjectType, SQLAlchemyConnectionField
 from graphene_sqlalchemy_filter import FilterSet, FilterableConnectionField
 
 from API import db
@@ -134,14 +134,13 @@ class Query(graphene.ObjectType):
     '''
     node = graphene.relay.Node.Field()
     errors = graphene.Field(ErrorType)
-    # appointments = FilterableConnectionField(connection=AppointmentsSchema, filters=AppointmentsFilter(),
-    #                                          sort=AppointmentsSchema.sort_argument())
-
-    appointments = graphene.List(AppointmentsSchema, filters=AppointmentsFilter())
+    #appointments = graphene.List(AppointmentsSchema, filters=AppointmentsFilter())
+    appointments=FilterableConnectionField(connection=AppointmentsSchema, filters=AppointmentsFilter(),
+                                         sort=AppointmentsSchema.sort_argument())
 
     @staticmethod
-    # @header_must_have_jwt
-    def resolve_appointments(parent, info, filters=None):
+    @header_must_have_jwt
+    def resolve_appointments(parent, info, filters=None,sort=None):
         """
         Generates an object representing one or more appointments and returns to graphene
         :param parent: The value object returned from the resolver of the parent field
@@ -150,9 +149,6 @@ class Query(graphene.ObjectType):
         :return: An object representing one or more appointments
         """
         query = AppointmentModel.query
-        # query=FilterableConnectionField(connection=AppointmentsSchema, filters=AppointmentsFilter(),
-        #                                  sort=AppointmentsSchema.sort_argument()).get_query(AppointmentModel, info)
-
         if filters is not None:
             query = AppointmentsFilter.filter(info, query, filters)
 
