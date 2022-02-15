@@ -93,10 +93,10 @@ mutation {
 
 ```
 
-4. Add The Token To Your Header Within ModHeader
+4. Add The Token To Your Header Within ModHeader (See below for an example Header)
 
   ```
-  Authorization: Bearer your-access-token
+  Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0eXBlIjoiYWNjZXNzIiwiaWF0IjoxNjQ0OTU5NTE4LCJuYmYiOjE2NDQ5NTk1MTgsImp0aSI6IjVlMmQxNWEyLTVkM2QtNGMyYi05ODE1LTQzZDAwMjIxZDdlMSIsImlkZW50aXR5IjoidGVzdF91c2VyIiwiZXhwIjoxNjQ0OTYwMTE4fQ.M93h3IdL0UTA6OuapMSHkfXsCsfB_pL4TP4NbhGDZ4E
   ```
    
 5. Query Appointments With Filters With The Below Query
