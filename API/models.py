@@ -1,9 +1,6 @@
 from API import db
 from werkzeug.security import generate_password_hash, check_password_hash
-##many specialisms can  exist
-##a therapist can have many specialisms
-# class Specialism
-# ##Try loading this without graphene - probs an sqlalchemy error
+
 SpecialismsForTherapists = db.Table("TherapistSpecialisms",
                                     db.Column("therapist_id", db.Integer, db.ForeignKey('therapist.therapist_id'),
                                               primary_key=True),
@@ -27,7 +24,7 @@ class Appointment(db.Model):
         return f"<Appointment ID {self.appointment_id}>"
 
 
-# Person
+
 class Therapist(db.Model):
     ___tablename__ = "Therapists"
     therapist_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
