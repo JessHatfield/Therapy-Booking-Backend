@@ -21,10 +21,6 @@ logger = logging.getLogger(__name__)
 
 
 
-
-
-
-
 class AppointmentsSchema(SQLAlchemyObjectType):
     class Meta:
         model = AppointmentModel
@@ -45,7 +41,7 @@ class SpecialismSchema(SQLAlchemyObjectType):
 
 class AppointmentsFilter(FilterSet):
     # Available Operations = ['eq', 'ne', 'like', 'ilike', 'is_null', 'in', 'not_in', 'lt', 'lte', 'gt', 'gte', 'range']
-    # full list of available filter operations can be found here
+    # details on each filter operation can be found here
     # https://github.com/art1415926535/graphene-sqlalchemy-filter#automatically-generated-filters
     has_specialisms = graphene.List(of_type=graphene.String)
 
