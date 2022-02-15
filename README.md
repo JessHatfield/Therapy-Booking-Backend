@@ -175,14 +175,18 @@ mutation {
 ### Why GraphQL Over REST?
 * I'm most familar with building REST APIs. That said given that Spill use GraphQL this seemed like a good opportunity to learn!
 * Using the GraphQL paradigm offers more benefits for spill vs REST where this API put into production
-   * It allows for quicker iteration vs REST. Schema is auto-generated from SQLAlchemy Models and added to the Graph in a few lines of code
+   * It allows for quicker iteration vs REST. Schema is auto-generated from SQLAlchemy Models and added to the Graph in a few lines of code and without API versioning!
    * It can be queried using existing frontend code written to interact with GraphQL.
    * Developers don't have to change their mode of thought to work with the API
+   * Strongly Typed saving time spent on type validation on the backend
 
-### Why SQLlite 
+### Why SQLlite + SQLAlchemy
 * SQLlite is a simple file based database with support for concurrent reads (but not writes). It's not fully featured or suitable for production
 * Where this API put into production our SQLlite database would be replaced with a cloud based alternative (for example Cloud SQL for PostgresSQL)
 * SQLlite offers a quick way of getting a database running for a small app hence why it was chosen here
+* ORMS make working with data models easier and cleaner at the expense of speed reductions when doing bulk inserts (which we don't do currently)
+* ORMS abstract away the interaction with the specific database making it easier to swap out DBs later on (which we would need to do given we use SQLlite currently)
+* ORMs also allow for the easy generation of migration scripts which make schema migrations quicker, more trackable and reliable vs direct SQL manipulation
 
 ### Observability + Monitoring
 * I've used the Python Logging Library to log messages. This library allows for extension via config files and easily integrates with cloud logging services
