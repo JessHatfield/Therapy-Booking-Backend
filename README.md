@@ -200,7 +200,7 @@ I'll admit this is not my speciality. That said the following decisions where ma
 * Had I more time I would have also implemented Role Based Access Control. This way we could prevent regular users from being able to create appointments
   
 
-###How Might We Handle Scale
+### How Might We Handle Scale
 
 Again another rather large subject!
 
