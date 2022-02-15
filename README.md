@@ -238,5 +238,6 @@ There are two bottlenecks that come to mind which pose issues when scaling
 * Flakeyness when running unit tests via pycharm - can lead to db not being deleted before the next test starts and failing unittests
 * Every failed auth attempt will trigger an event in sentry. We need a graphql middleware to handle expected exceptions and return them to the user
 * Further testing to establish the capacity of the libraries I've used to support pagination and sorting
-
+* Auto generate a schema artifact for reference by frontend team
+* Log succesfull query responses
 
