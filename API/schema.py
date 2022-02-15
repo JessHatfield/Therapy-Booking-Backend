@@ -39,7 +39,7 @@ class Query(graphene.ObjectType):
                                              sort=AppointmentsSchema.sort_argument())
 
     @staticmethod
-   # @header_must_have_jwt
+    @header_must_have_jwt
     def resolve_appointments(parent, info, filters=None, sort=None, **kwargs):
         """
         Generates an object representing one or more appointments and returns to graphene
