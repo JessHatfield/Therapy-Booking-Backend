@@ -422,6 +422,8 @@ class API_Acceptance_Tests(unittest.TestCase):
             }
         })
 
+
+
     @mock.patch('API.authentication.decorators._extract_header_token_value')
     @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
     def test_appointment_mutate_on_graphql_endpoint(self, *args):

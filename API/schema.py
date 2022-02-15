@@ -1,14 +1,19 @@
+import logging
+
 import graphene
-from graphene_sqlalchemy import SQLAlchemyObjectType, SQLAlchemyConnectionField
+
+from graphene_sqlalchemy import SQLAlchemyObjectType
 from graphene_sqlalchemy_filter import FilterSet, FilterableConnectionField
 
 from API import db
-from API.authentication import header_must_have_jwt
+
 from API.models import Appointment as AppointmentModel
 from API.models import Therapist as TherapistModel
 from API.models import Specialism as SpecialismModel
 from sqlalchemy import and_
-from API.authentication import AuthMutation, RefreshMutation
+from API.authentication import AuthMutation, RefreshMutation, header_must_have_jwt
+
+logger = logging.getLogger(__name__)
 
 # This file handles the definition of GraphQL Schemas and the resolving of graph querys to our underlying data model
 # graphene_sqlalchemy provides helper methods to query data from SQlAlchemy
@@ -71,8 +76,6 @@ class AppointmentsFilter(FilterSet):
         return query, specialisms.specialism_name.in_(value)
 
 
-
-
 class AppointmentMutation(graphene.Mutation):
     appointment = graphene.Field(AppointmentsSchema)
 
@@ -98,13 +101,19 @@ class AppointmentMutation(graphene.Mutation):
                                                        start_time_unix_seconds=start_time_unix_seconds,
                                                        duration_seconds=duration_seconds, type=type).first()
         if appointment:
+            logger.info(f"Returned Existing Appointment {appointment}")
+            logger.debug({"message": "Returning Mutation", "mutation_submitted": info.context.json["query"],
+                          "appointment_returned": appointment})
             return AppointmentMutation(appointment=appointment)
-        else:
+
+        if not appointment:
             appointment = AppointmentModel(therapist_id=therapist_id, start_time_unix_seconds=start_time_unix_seconds,
                                            duration_seconds=duration_seconds, type=type)
             db.session.add(appointment)
             db.session.commit()
-
+        logger.info(f"Created New Appointment {appointment}")
+        logger.debug({"message": "Returning Mutation", "mutation_submitted": info.context.json["query"],
+                      "appointment_returned": appointment})
         return AppointmentMutation(appointment=appointment)
 
 
@@ -134,13 +143,12 @@ class Query(graphene.ObjectType):
     '''
     node = graphene.relay.Node.Field()
     errors = graphene.Field(ErrorType)
-    #appointments = graphene.List(AppointmentsSchema, filters=AppointmentsFilter())
-    appointments=FilterableConnectionField(connection=AppointmentsSchema, filters=AppointmentsFilter(),
-                                         sort=AppointmentsSchema.sort_argument())
+    appointments = FilterableConnectionField(connection=AppointmentsSchema, filters=AppointmentsFilter(),
+                                             sort=AppointmentsSchema.sort_argument())
 
     @staticmethod
     @header_must_have_jwt
-    def resolve_appointments(parent, info, filters=None,sort=None):
+    def resolve_appointments(parent, info, filters=None, sort=None, **kwargs):
         """
         Generates an object representing one or more appointments and returns to graphene
         :param parent: The value object returned from the resolver of the parent field
@@ -148,12 +156,13 @@ class Query(graphene.ObjectType):
         :param kwargs: Any arguments defined in the field itself
         :return: An object representing one or more appointments
         """
+
         query = AppointmentModel.query
+        logger.debug({"message": "Resolving Appointment Query", "query_submitted": info.context.json["query"]})
         if filters is not None:
             query = AppointmentsFilter.filter(info, query, filters)
 
         return query
-
 
 
 # constructs the complete Graphql Schema

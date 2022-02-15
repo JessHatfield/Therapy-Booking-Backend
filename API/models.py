@@ -24,7 +24,7 @@ class Appointment(db.Model):
     therapist_id = db.Column(db.Integer, db.ForeignKey('therapist.therapist_id'), nullable=True)
 
     def __repr__(self):
-        return f"<User {self.id}>"
+        return f"<Appointment ID {self.appointment_id}>"
 
 
 # Person
@@ -38,11 +38,17 @@ class Therapist(db.Model):
     specialisms = db.relationship('Specialism', secondary=SpecialismsForTherapists, lazy='subquery',
                                   backref=db.backref('therapists', lazy=True))
 
+    def __repr__(self):
+        return f"<Therapist ID {self.therapist_id}>"
+
 
 class Specialism(db.Model):
     ___tablename__ = "Specialisms"
     specialism_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     specialism_name = db.Column(db.Text, nullable=False)
+
+    def __repr__(self):
+        return f"<Specialism ID {self.specialism_id}>"
 
 
 class User(db.Model):
@@ -51,6 +57,9 @@ class User(db.Model):
     username = db.Column(db.String(20), unique=True, nullable=False)
     password = db.Column(db.String(60), nullable=True)
     email = db.Column(db.String(100))
+
+    def __repr__(self):
+        return f"<User ID {self.user_id}>"
 
     def set_password(self, password):
         self.password = generate_password_hash(password)
