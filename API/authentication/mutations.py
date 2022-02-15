@@ -1,4 +1,3 @@
-from API.authentication.decorators import header_must_have_jwt
 from API.models import User
 import graphene
 

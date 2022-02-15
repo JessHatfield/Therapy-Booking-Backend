@@ -17,7 +17,7 @@ class AppointmentsFilter(FilterSet):
         model = AppointmentModel
         fields = {
             'start_time_unix_seconds': ['range'],
-            'type': ['eq'],
+            'type': ['eq','in'],
         }
 
     @classmethod

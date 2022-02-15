@@ -14,7 +14,6 @@ class TestConfig(Config):
     API_DOMAIN = 'http://127.0.0.1:5000'
 
 
-
 class API_Integration_Tests(unittest.TestCase):
 
     def setUp(self):
@@ -31,6 +30,7 @@ class API_Integration_Tests(unittest.TestCase):
 
     @mock.patch('API.authentication.decorators._extract_header_token_value')
     @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
+    # mock.patch('API.appointments.decorators.header_must_have_jwt')
     def test_graphql_endpoint_returns_empty_query_result(self, *args):
         """
         checks to see that our endpoint returns an empty data structure when no database rows exist
@@ -200,7 +200,7 @@ class API_Acceptance_Tests(unittest.TestCase):
 
     @mock.patch('API.authentication.decorators._extract_header_token_value')
     @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
-    def test_graphql_endpoint_returns_required_appointment_fields_with_all_filters(self, *args):
+    def test_graphql_endpoint_returns_required_appointment_fields_with_typeEq_filter(self, *args):
         """
         Checks to see that the user can retrieve
             *Therapists Name
@@ -209,15 +209,13 @@ class API_Acceptance_Tests(unittest.TestCase):
             *Appointment Type
 
         With Filters Applied
-            *Date Range
             *Appointment Type
-            *Therapist Specialism
         """
 
         endpoint = f'{TestConfig.API_DOMAIN}/graphql'
         response = self.app.post(endpoint, json={"query": """
            {
-          appointments(filters: {hasSpecialisms: ["ADHD"], type: "one-off", startTimeUnixSecondsRange: {begin: 1644747500, end: 1644790000}}) {
+          appointments(filters: {type: "one-off"}) {
             edges {
               node {
                 therapists {
@@ -239,6 +237,518 @@ class API_Acceptance_Tests(unittest.TestCase):
           }
         }
         """})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json, {
+            "data": {
+                "appointments": {
+                    "edges": [
+                        {
+                            "node": {
+                                "therapists": {
+                                    "firstName": "jeff",
+                                    "lastName": "smith",
+                                    "specialisms": {
+                                        "edges": [
+                                            {
+                                                "node": {
+                                                    "specialismName": "Addiction"
+                                                }
+                                            },
+                                            {
+                                                "node": {
+                                                    "specialismName": "ADHD"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                "startTimeUnixSeconds": 1644747572,
+                                "durationSeconds": 3600,
+                                "type": "one-off"
+                            }
+                        }
+                    ]
+                }
+            }
+        })
+
+    @mock.patch('API.authentication.decorators._extract_header_token_value')
+    @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
+    def test_graphql_endpoint_returns_required_appointment_fields_with_typeIn_filter_single_option(self, *args):
+        """
+        Checks to see that the user can retrieve
+            *Therapists Name
+            *Appointment Time
+            *Appointment Duration
+            *Appointment Type
+
+        With Filters Applied
+            *Appointment Type one of one option
+        """
+
+        endpoint = f'{TestConfig.API_DOMAIN}/graphql'
+        response = self.app.post(endpoint, json={"query": """
+              {
+             appointments(filters: {typeIn:["one-off"]}) {
+               edges {
+                 node {
+                   therapists {
+                     firstName
+                     lastName
+                     specialisms {
+                       edges {
+                         node {
+                           specialismName
+                         }
+                       }
+                     }
+                   }
+                   startTimeUnixSeconds
+                   durationSeconds
+                   type
+                 }
+               }
+             }
+           }
+           """})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json, {
+            "data": {
+                "appointments": {
+                    "edges": [
+                        {
+                            "node": {
+                                "therapists": {
+                                    "firstName": "jeff",
+                                    "lastName": "smith",
+                                    "specialisms": {
+                                        "edges": [
+                                            {
+                                                "node": {
+                                                    "specialismName": "Addiction"
+                                                }
+                                            },
+                                            {
+                                                "node": {
+                                                    "specialismName": "ADHD"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                "startTimeUnixSeconds": 1644747572,
+                                "durationSeconds": 3600,
+                                "type": "one-off"
+                            }
+                        }
+                    ]
+                }
+            }
+        })
+
+    @mock.patch('API.authentication.decorators._extract_header_token_value')
+    @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
+    def test_graphql_endpoint_returns_required_appointment_fields_with_typeIn_filter_multiple_options(self, *args):
+        """
+        Checks to see that the user can retrieve
+            *Therapists Name
+            *Appointment Time
+            *Appointment Duration
+            *Appointment Type
+
+        With Filters Applied
+            *Appointment Type one of many options
+        """
+
+        endpoint = f'{TestConfig.API_DOMAIN}/graphql'
+        response = self.app.post(endpoint, json={"query": """
+                 {
+                appointments(filters: {typeIn: ["one-off", "consultation"]}) {
+                  edges {
+                    node {
+                      therapists {
+                        firstName
+                        lastName
+                        specialisms {
+                          edges {
+                            node {
+                              specialismName
+                            }
+                          }
+                        }
+                      }
+                      startTimeUnixSeconds
+                      durationSeconds
+                      type
+                    }
+                  }
+                }
+              }
+              """})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json, {
+            "data": {
+                "appointments": {
+                    "edges": [
+                        {
+                            "node": {
+                                "therapists": {
+                                    "firstName": "jeff",
+                                    "lastName": "smith",
+                                    "specialisms": {
+                                        "edges": [
+                                            {
+                                                "node": {
+                                                    "specialismName": "Addiction"
+                                                }
+                                            },
+                                            {
+                                                "node": {
+                                                    "specialismName": "ADHD"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                "startTimeUnixSeconds": 1644747572,
+                                "durationSeconds": 3600,
+                                "type": "one-off"
+                            }
+                        },
+                        {
+                            "node": {
+                                "therapists": {
+                                    "firstName": "jane",
+                                    "lastName": "smith",
+                                    "specialisms": {
+                                        "edges": [
+                                            {
+                                                "node": {
+                                                    "specialismName": "CBT"
+                                                }
+                                            },
+                                            {
+                                                "node": {
+                                                    "specialismName": "Divorce"
+                                                }
+                                            },
+                                            {
+                                                "node": {
+                                                    "specialismName": "Sexuality"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                "startTimeUnixSeconds": 1644780000,
+                                "durationSeconds": 3600,
+                                "type": "consultation"
+                            }
+                        }
+                    ]
+                }
+            }
+        })
+
+    @mock.patch('API.authentication.decorators._extract_header_token_value')
+    @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
+    def test_graphql_endpoint_returns_required_appointment_fields_with_startTimeUnixSecondsRange_filter(self, *args):
+        """
+        Checks to see that the user can retrieve
+            *Therapists Name
+            *Appointment Time
+            *Appointment Duration
+            *Appointment Type
+
+        With Filters Applied
+            *Appointment startTimeUnixSeconds within Range
+        """
+
+        endpoint = f'{TestConfig.API_DOMAIN}/graphql'
+        response = self.app.post(endpoint, json={"query": """
+                         {
+                          appointments(filters: {startTimeUnixSecondsRange: {begin: 1644747580, end: 1644790000}}) {
+                            edges {
+                              node {
+                                therapists {
+                                  firstName
+                                  lastName
+                                  specialisms {
+                                    edges {
+                                      node {
+                                        specialismName
+                                      }
+                                    }
+                                  }
+                                }
+                                startTimeUnixSeconds
+                                durationSeconds
+                                type
+                              }
+                            }
+                          }
+                        }
+                      """})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json, {
+            "data": {
+                "appointments": {
+                    "edges": [
+                        {
+                            "node": {
+                                "therapists": {
+                                    "firstName": "jane",
+                                    "lastName": "smith",
+                                    "specialisms": {
+                                        "edges": [
+                                            {
+                                                "node": {
+                                                    "specialismName": "CBT"
+                                                }
+                                            },
+                                            {
+                                                "node": {
+                                                    "specialismName": "Divorce"
+                                                }
+                                            },
+                                            {
+                                                "node": {
+                                                    "specialismName": "Sexuality"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                "startTimeUnixSeconds": 1644780000,
+                                "durationSeconds": 3600,
+                                "type": "consultation"
+                            }
+                        }
+                    ]
+                }
+            }
+        })
+
+    @mock.patch('API.authentication.decorators._extract_header_token_value')
+    @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
+    def test_graphql_endpoint_returns_required_appointment_fields_with_specialismsIn_filter_one_specialism(self, *args):
+        """
+        Checks to see that the user can retrieve
+            *Therapists Name
+            *Appointment Time
+            *Appointment Duration
+            *Appointment Type
+
+        With Filters Applied
+            *Appointment specialsmsIn
+        """
+
+        endpoint = f'{TestConfig.API_DOMAIN}/graphql'
+        response = self.app.post(endpoint, json={"query": """
+                             {
+                              appointments(filters: {hasSpecialisms: ["ADHD"]}) {
+                                edges {
+                                  node {
+                                    therapists {
+                                      firstName
+                                      lastName
+                                      specialisms {
+                                        edges {
+                                          node {
+                                            specialismName
+                                          }
+                                        }
+                                      }
+                                    }
+                                    startTimeUnixSeconds
+                                    durationSeconds
+                                    type
+                                  }
+                                }
+                              }
+                            }
+                          """})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json, {
+            "data": {
+                "appointments": {
+                    "edges": [
+                        {
+                            "node": {
+                                "therapists": {
+                                    "firstName": "jeff",
+                                    "lastName": "smith",
+                                    "specialisms": {
+                                        "edges": [
+                                            {
+                                                "node": {
+                                                    "specialismName": "Addiction"
+                                                }
+                                            },
+                                            {
+                                                "node": {
+                                                    "specialismName": "ADHD"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                "startTimeUnixSeconds": 1644747572,
+                                "durationSeconds": 3600,
+                                "type": "one-off"
+                            }
+                        }
+                    ]
+                }
+            }
+        })
+
+    @mock.patch('API.authentication.decorators._extract_header_token_value')
+    @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
+    def test_graphql_endpoint_returns_required_appointment_fields_with_specialismsIn_filter_multiple_specialisms(self,
+                                                                                                                 *args):
+        """
+        Checks to see that the user can retrieve
+            *Therapists Name
+            *Appointment Time
+            *Appointment Duration
+            *Appointment Type
+
+        With Filters Applied
+            *Appointment specialsmsIn
+        """
+
+        endpoint = f'{TestConfig.API_DOMAIN}/graphql'
+        response = self.app.post(endpoint, json={"query": """
+                                {
+                                 appointments(filters: {hasSpecialisms: ["Addiction", "ADHD", "CBT", "Divorce", "Sexuality"]}) {
+                                   edges {
+                                     node {
+                                       therapists {
+                                         firstName
+                                         lastName
+                                         specialisms {
+                                           edges {
+                                             node {
+                                               specialismName
+                                             }
+                                           }
+                                         }
+                                       }
+                                       startTimeUnixSeconds
+                                       durationSeconds
+                                       type
+                                     }
+                                   }
+                                 }
+                               }
+                             """})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json, {
+            "data": {
+                "appointments": {
+                    "edges": [
+                        {
+                            "node": {
+                                "therapists": {
+                                    "firstName": "jane",
+                                    "lastName": "smith",
+                                    "specialisms": {
+                                        "edges": [
+                                            {
+                                                "node": {
+                                                    "specialismName": "CBT"
+                                                }
+                                            },
+                                            {
+                                                "node": {
+                                                    "specialismName": "Divorce"
+                                                }
+                                            },
+                                            {
+                                                "node": {
+                                                    "specialismName": "Sexuality"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                "startTimeUnixSeconds": 1644780000,
+                                "durationSeconds": 3600,
+                                "type": "consultation"
+                            }
+                        },
+                        {
+                            "node": {
+                                "therapists": {
+                                    "firstName": "jeff",
+                                    "lastName": "smith",
+                                    "specialisms": {
+                                        "edges": [
+                                            {
+                                                "node": {
+                                                    "specialismName": "Addiction"
+                                                }
+                                            },
+                                            {
+                                                "node": {
+                                                    "specialismName": "ADHD"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                "startTimeUnixSeconds": 1644747572,
+                                "durationSeconds": 3600,
+                                "type": "one-off"
+                            }
+                        }
+                    ]
+                }
+            }
+        })
+
+    @mock.patch('API.authentication.decorators._extract_header_token_value')
+    @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
+    def test_graphql_endpoint_returns_required_appointment_fields_with_all_filters(self, *args):
+        """
+        Checks to see that the user can retrieve
+            *Therapists Name
+            *Appointment Time
+            *Appointment Duration
+            *Appointment Type
+
+        With Filters Applied
+            *Date Range
+            *Appointment Type
+            *Therapist Specialism
+        """
+
+        endpoint = f'{TestConfig.API_DOMAIN}/graphql'
+        response = self.app.post(endpoint, json={"query": """
+                {
+               appointments(filters: {hasSpecialisms: ["ADHD"], type: "one-off", startTimeUnixSecondsRange: {begin: 1644747500, end: 1644790000}}) {
+                 edges {
+                   node {
+                     therapists {
+                       firstName
+                       lastName
+                       specialisms {
+                         edges {
+                           node {
+                             specialismName
+                           }
+                         }
+                       }
+                     }
+                     startTimeUnixSeconds
+                     durationSeconds
+                     type
+                   }
+                 }
+               }
+             }
+             """})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json, {
             "data": {
