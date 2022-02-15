@@ -215,14 +215,14 @@ There are two bottlenecks that come to mind which pose issues when scaling
    * Capacity of API to respond to requests
    * Capacity of the Database to serve queries
 
-Handling API Requests Volume
+#### Handling API Requests Volume
 
 * Our Dockerized API could be deploy via a managed service like Googles Cloud Run
 * This would provide a single endpoint for the frontend to query and abstracts away the complexity of distributing loads internally + managing containers. 
 * The service is both highly scaleable and elastic (Google will automatically increase or reduce container volumes as traffic loads require)
 * Cloud logging + log mesages containing a process id, container id and user ids could be used to stich together user journeys
 
-Handling Database Queries
+#### Handling Database Queries
 
 * Our Database would need be located seperately from these containers. Docker containers within Cloud run are temporary and destroyed after use
 * Likely hosted within Googles or AWS cloud using one of their cloud based DBs
