@@ -19,11 +19,10 @@ logger = logging.getLogger(__name__)
 # graphene_sqlalchemy provides helper methods to query data from SQlAlchemy
 # https://github.com/graphql-python/graphene-sqlalchemy
 
-# full list of available filter operations can be found here
-# https://github.com/art1415926535/graphene-sqlalchemy-filter#automatically-generated-filters
 
 
-ALL_OPERATIONS = ['eq', 'ne', 'like', 'ilike', 'is_null', 'in', 'not_in', 'lt', 'lte', 'gt', 'gte', 'range']
+
+
 
 
 class AppointmentsSchema(SQLAlchemyObjectType):
@@ -45,6 +44,9 @@ class SpecialismSchema(SQLAlchemyObjectType):
 
 
 class AppointmentsFilter(FilterSet):
+    # Available Operations = ['eq', 'ne', 'like', 'ilike', 'is_null', 'in', 'not_in', 'lt', 'lte', 'gt', 'gte', 'range']
+    # full list of available filter operations can be found here
+    # https://github.com/art1415926535/graphene-sqlalchemy-filter#automatically-generated-filters
     has_specialisms = graphene.List(of_type=graphene.String)
 
     class Meta:
