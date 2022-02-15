@@ -1,7 +1,7 @@
 from flask import Blueprint
 from flask_graphql import GraphQLView
 
-from Spill_Backend_App.API.schema import schema
+from API.schema import schema
 
 bp = Blueprint('main', __name__)
 

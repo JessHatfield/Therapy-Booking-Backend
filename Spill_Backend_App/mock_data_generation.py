@@ -1,5 +1,5 @@
 def insert_api_users(db):
-    from Spill_Backend_App.API.models import User
+    from API.models import User
 
     test_user = User(username="test_user", email="test@test.com")
     test_user.set_password("password")
@@ -13,7 +13,7 @@ def generate_nine_unique_appointments_for_testing_filter_combinations(db):
     :return: nine appointments which all differ from the other in one specific way - covering the full range of possible differences
     difference = at least one aspect of the appointment differs from appointment 3
     """
-    from Spill_Backend_App.API.models import Therapist, Specialism, Appointment
+    from API.models import Therapist, Specialism, Appointment
 
     # Different Start Time
     therapist_3 = Therapist(first_name="charlie", last_name="kelly")
@@ -79,7 +79,7 @@ def generate_nine_unique_appointments_for_testing_filter_combinations(db):
 
 
 def insert_appointments_and_therapists(db):
-    from Spill_Backend_App.API.models import Appointment, Therapist, Specialism
+    from API.models import Appointment, Therapist, Specialism
 
     # 1644747572 = Sun Feb 13th 2022 - 10:19:32
     appointment_sun_am = Appointment(start_time_unix_seconds=1644747572, duration_seconds=3600, type="one-off",
@@ -111,7 +111,7 @@ def insert_appointments_and_therapists(db):
 
 
 def generate_fake_data_for_development_db():
-    from Spill_Backend_App.API import create_app, db, Config
+    from API import create_app, db, Config
 
     if input(
             f"Proceeding Will Wipe All Data In '{Config.SQLALCHEMY_DATABASE_URI}'- Do You Want To Proceed? Y/N") == "Y":
@@ -122,6 +122,7 @@ def generate_fake_data_for_development_db():
         db.create_all()
         insert_appointments_and_therapists(db)
         insert_api_users(db)
+
         print("Old Records Have Been Wiped And New Mock Records Created")
     else:
         print("You Did Not Select 'Y' - Exiting Function")

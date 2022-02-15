@@ -1,9 +1,9 @@
 import graphene
 import logging
-from Spill_Backend_App.API import db
-from Spill_Backend_App.API.authentication import header_must_have_jwt
-from Spill_Backend_App.API.models import Appointment as AppointmentModel
-from Spill_Backend_App.API.appointments.schema import AppointmentsSchema
+from API import db
+from API.authentication import header_must_have_jwt
+from API.models import Appointment as AppointmentModel
+from API.appointments.schema import AppointmentsSchema
 
 logger = logging.getLogger(__name__)
 

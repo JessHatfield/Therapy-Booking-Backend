@@ -1,9 +1,8 @@
 import unittest
 from unittest import mock
 
-import Spill_Backend_App.API.models
-from Spill_Backend_App.API import create_app, db, Config
-import Spill_Backend_App.mock_data_generation as mock_data_generation
+from API import create_app, db, Config
+import mock_data_generation as mock_data_generation
 
 import os
 
@@ -30,8 +29,8 @@ class API_Integration_Tests(unittest.TestCase):
         db.drop_all()
         self.app_context.pop()
 
-    @mock.patch('Spill_Backend_App.API.authentication.decorators._extract_header_token_value')
-    @mock.patch('Spill_Backend_App.API.authentication.decorators.verify_jwt_in_argument')
+    @mock.patch('API.authentication.decorators._extract_header_token_value')
+    @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
     def test_graphql_endpoint_returns_empty_query_result(self, *args):
         """
         checks to see that our endpoint returns an empty data structure when no database rows exist
@@ -53,8 +52,8 @@ class API_Integration_Tests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json, {"data": {"appointments": {'edges': []}}})
 
-    @mock.patch('Spill_Backend_App.API.authentication.decorators._extract_header_token_value')
-    @mock.patch('Spill_Backend_App.API.authentication.decorators.verify_jwt_in_argument')
+    @mock.patch('API.authentication.decorators._extract_header_token_value')
+    @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
     def test_graphql_endpoint_returns_error_response_for_non_existent_object(self, *args):
         """
         Checks to see that error messages are being returned from Graphene via our endpoint
@@ -66,8 +65,8 @@ class API_Integration_Tests(unittest.TestCase):
             {'message': 'Cannot query field "non_existent_object" on type "Query".',
              'locations': [{'line': 1, 'column': 7}]}]})
 
-    @mock.patch('Spill_Backend_App.API.authentication.decorators._extract_header_token_value')
-    @mock.patch('Spill_Backend_App.API.authentication.decorators.verify_jwt_in_argument')
+    @mock.patch('API.authentication.decorators._extract_header_token_value')
+    @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
     def test_graphql_endpoint_returns_error_response_for_non_existent_field(self, *args):
         """
         Checks to see that error messages are being returned from GraphQL-Core
@@ -97,8 +96,8 @@ class API_Acceptance_Tests(unittest.TestCase):
         db.drop_all()
         self.app_context.pop()
 
-    @mock.patch('Spill_Backend_App.API.authentication.decorators._extract_header_token_value')
-    @mock.patch('Spill_Backend_App.API.authentication.decorators.verify_jwt_in_argument')
+    @mock.patch('API.authentication.decorators._extract_header_token_value')
+    @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
     def test_graphql_endpoint_returns_required_appointment_fields(self, *args):
         """
         Checks to see that the user can retrieve
@@ -199,8 +198,8 @@ class API_Acceptance_Tests(unittest.TestCase):
             }
         })
 
-    @mock.patch('Spill_Backend_App.API.authentication.decorators._extract_header_token_value')
-    @mock.patch('Spill_Backend_App.API.authentication.decorators.verify_jwt_in_argument')
+    @mock.patch('API.authentication.decorators._extract_header_token_value')
+    @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
     def test_graphql_endpoint_returns_required_appointment_fields_with_typeEq_filter(self, *args):
         """
         Checks to see that the user can retrieve
@@ -273,8 +272,8 @@ class API_Acceptance_Tests(unittest.TestCase):
             }
         })
 
-    @mock.patch('Spill_Backend_App.API.authentication.decorators._extract_header_token_value')
-    @mock.patch('Spill_Backend_App.API.authentication.decorators.verify_jwt_in_argument')
+    @mock.patch('API.authentication.decorators._extract_header_token_value')
+    @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
     def test_graphql_endpoint_returns_required_appointment_fields_with_typeIn_filter_single_option(self, *args):
         """
         Checks to see that the user can retrieve
@@ -347,8 +346,8 @@ class API_Acceptance_Tests(unittest.TestCase):
             }
         })
 
-    @mock.patch('Spill_Backend_App.API.authentication.decorators._extract_header_token_value')
-    @mock.patch('Spill_Backend_App.API.authentication.decorators.verify_jwt_in_argument')
+    @mock.patch('API.authentication.decorators._extract_header_token_value')
+    @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
     def test_graphql_endpoint_returns_required_appointment_fields_with_typeIn_filter_multiple_options(self, *args):
         """
         Checks to see that the user can retrieve
@@ -451,8 +450,8 @@ class API_Acceptance_Tests(unittest.TestCase):
             }
         })
 
-    @mock.patch('Spill_Backend_App.API.authentication.decorators._extract_header_token_value')
-    @mock.patch('Spill_Backend_App.API.authentication.decorators.verify_jwt_in_argument')
+    @mock.patch('API.authentication.decorators._extract_header_token_value')
+    @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
     def test_graphql_endpoint_returns_required_appointment_fields_with_startTimeUnixSecondsRange_filter(self, *args):
         """
         Checks to see that the user can retrieve
@@ -530,8 +529,8 @@ class API_Acceptance_Tests(unittest.TestCase):
             }
         })
 
-    @mock.patch('Spill_Backend_App.API.authentication.decorators._extract_header_token_value')
-    @mock.patch('Spill_Backend_App.API.authentication.decorators.verify_jwt_in_argument')
+    @mock.patch('API.authentication.decorators._extract_header_token_value')
+    @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
     def test_graphql_endpoint_returns_required_appointment_fields_with_specialismsIn_filter_one_specialism(self, *args):
         """
         Checks to see that the user can retrieve
@@ -604,8 +603,8 @@ class API_Acceptance_Tests(unittest.TestCase):
             }
         })
 
-    @mock.patch('Spill_Backend_App.API.authentication.decorators._extract_header_token_value')
-    @mock.patch('Spill_Backend_App.API.authentication.decorators.verify_jwt_in_argument')
+    @mock.patch('API.authentication.decorators._extract_header_token_value')
+    @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
     def test_graphql_endpoint_returns_required_appointment_fields_with_all_filters(self, *args):
         """
         Checks to see that the user can retrieve
@@ -659,8 +658,8 @@ class API_Acceptance_Tests(unittest.TestCase):
                            'specialisms': {'edges': [{'node': {'specialismName': 'ADHD'}}]}}, 'startTimeUnixSeconds': 0,
             'durationSeconds': 0, 'type': 'one-off'}}]}}})
 
-    @mock.patch('Spill_Backend_App.API.authentication.decorators._extract_header_token_value')
-    @mock.patch('Spill_Backend_App.API.authentication.decorators.verify_jwt_in_argument')
+    @mock.patch('API.authentication.decorators._extract_header_token_value')
+    @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
     def test_appointment_mutate_on_graphql_endpoint(self, *args):
         endpoint = f'{TestConfig.API_DOMAIN}/graphql'
         response = self.app.post(endpoint, json={"query": """
@@ -716,8 +715,8 @@ class API_Acceptance_Tests(unittest.TestCase):
             }
         })
 
-    @mock.patch('Spill_Backend_App.API.authentication.decorators._extract_header_token_value')
-    @mock.patch('Spill_Backend_App.API.authentication.decorators.verify_jwt_in_argument')
+    @mock.patch('API.authentication.decorators._extract_header_token_value')
+    @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
     def test_appointment_mutate_on_graphql_endpoint_idempotent_on_multiple_calls(self, *args):
         endpoint = f'{TestConfig.API_DOMAIN}/graphql'
         query = """
