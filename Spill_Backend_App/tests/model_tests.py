@@ -1,7 +1,7 @@
 import unittest
-from API.models import User
-from API.config import Config
-from API import create_app, db
+from Spill_Backend_App.API.models import User
+from Spill_Backend_App.API.config import Config
+from Spill_Backend_App.API import create_app, db
 import os
 
 

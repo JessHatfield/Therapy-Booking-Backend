@@ -1,9 +1,9 @@
 import unittest
 from unittest import mock
 
-import API.models
-from API import create_app, db, Config
-import mock_data_generation
+import Spill_Backend_App.API.models
+from Spill_Backend_App.API import create_app, db, Config
+import Spill_Backend_App.mock_data_generation as mock_data_generation
 
 import os
 
@@ -30,9 +30,8 @@ class API_Integration_Tests(unittest.TestCase):
         db.drop_all()
         self.app_context.pop()
 
-    @mock.patch('API.authentication.decorators._extract_header_token_value')
-    @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
-    # mock.patch('API.appointments.decorators.header_must_have_jwt')
+    @mock.patch('Spill_Backend_App.API.authentication.decorators._extract_header_token_value')
+    @mock.patch('Spill_Backend_App.API.authentication.decorators.verify_jwt_in_argument')
     def test_graphql_endpoint_returns_empty_query_result(self, *args):
         """
         checks to see that our endpoint returns an empty data structure when no database rows exist
@@ -54,8 +53,8 @@ class API_Integration_Tests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json, {"data": {"appointments": {'edges': []}}})
 
-    @mock.patch('API.authentication.decorators._extract_header_token_value')
-    @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
+    @mock.patch('Spill_Backend_App.API.authentication.decorators._extract_header_token_value')
+    @mock.patch('Spill_Backend_App.API.authentication.decorators.verify_jwt_in_argument')
     def test_graphql_endpoint_returns_error_response_for_non_existent_object(self, *args):
         """
         Checks to see that error messages are being returned from Graphene via our endpoint
@@ -67,8 +66,8 @@ class API_Integration_Tests(unittest.TestCase):
             {'message': 'Cannot query field "non_existent_object" on type "Query".',
              'locations': [{'line': 1, 'column': 7}]}]})
 
-    @mock.patch('API.authentication.decorators._extract_header_token_value')
-    @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
+    @mock.patch('Spill_Backend_App.API.authentication.decorators._extract_header_token_value')
+    @mock.patch('Spill_Backend_App.API.authentication.decorators.verify_jwt_in_argument')
     def test_graphql_endpoint_returns_error_response_for_non_existent_field(self, *args):
         """
         Checks to see that error messages are being returned from GraphQL-Core
@@ -98,8 +97,8 @@ class API_Acceptance_Tests(unittest.TestCase):
         db.drop_all()
         self.app_context.pop()
 
-    @mock.patch('API.authentication.decorators._extract_header_token_value')
-    @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
+    @mock.patch('Spill_Backend_App.API.authentication.decorators._extract_header_token_value')
+    @mock.patch('Spill_Backend_App.API.authentication.decorators.verify_jwt_in_argument')
     def test_graphql_endpoint_returns_required_appointment_fields(self, *args):
         """
         Checks to see that the user can retrieve
@@ -200,8 +199,8 @@ class API_Acceptance_Tests(unittest.TestCase):
             }
         })
 
-    @mock.patch('API.authentication.decorators._extract_header_token_value')
-    @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
+    @mock.patch('Spill_Backend_App.API.authentication.decorators._extract_header_token_value')
+    @mock.patch('Spill_Backend_App.API.authentication.decorators.verify_jwt_in_argument')
     def test_graphql_endpoint_returns_required_appointment_fields_with_typeEq_filter(self, *args):
         """
         Checks to see that the user can retrieve
@@ -274,8 +273,8 @@ class API_Acceptance_Tests(unittest.TestCase):
             }
         })
 
-    @mock.patch('API.authentication.decorators._extract_header_token_value')
-    @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
+    @mock.patch('Spill_Backend_App.API.authentication.decorators._extract_header_token_value')
+    @mock.patch('Spill_Backend_App.API.authentication.decorators.verify_jwt_in_argument')
     def test_graphql_endpoint_returns_required_appointment_fields_with_typeIn_filter_single_option(self, *args):
         """
         Checks to see that the user can retrieve
@@ -348,8 +347,8 @@ class API_Acceptance_Tests(unittest.TestCase):
             }
         })
 
-    @mock.patch('API.authentication.decorators._extract_header_token_value')
-    @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
+    @mock.patch('Spill_Backend_App.API.authentication.decorators._extract_header_token_value')
+    @mock.patch('Spill_Backend_App.API.authentication.decorators.verify_jwt_in_argument')
     def test_graphql_endpoint_returns_required_appointment_fields_with_typeIn_filter_multiple_options(self, *args):
         """
         Checks to see that the user can retrieve
@@ -452,8 +451,8 @@ class API_Acceptance_Tests(unittest.TestCase):
             }
         })
 
-    @mock.patch('API.authentication.decorators._extract_header_token_value')
-    @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
+    @mock.patch('Spill_Backend_App.API.authentication.decorators._extract_header_token_value')
+    @mock.patch('Spill_Backend_App.API.authentication.decorators.verify_jwt_in_argument')
     def test_graphql_endpoint_returns_required_appointment_fields_with_startTimeUnixSecondsRange_filter(self, *args):
         """
         Checks to see that the user can retrieve
@@ -531,8 +530,8 @@ class API_Acceptance_Tests(unittest.TestCase):
             }
         })
 
-    @mock.patch('API.authentication.decorators._extract_header_token_value')
-    @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
+    @mock.patch('Spill_Backend_App.API.authentication.decorators._extract_header_token_value')
+    @mock.patch('Spill_Backend_App.API.authentication.decorators.verify_jwt_in_argument')
     def test_graphql_endpoint_returns_required_appointment_fields_with_specialismsIn_filter_one_specialism(self, *args):
         """
         Checks to see that the user can retrieve
@@ -605,114 +604,8 @@ class API_Acceptance_Tests(unittest.TestCase):
             }
         })
 
-    # @mock.patch('API.authentication.decorators._extract_header_token_value')
-    # @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
-    # def test_graphql_endpoint_returns_required_appointment_fields_with_specialismsIn_filter_multiple_specialisms(self,
-    #                                                                                                              *args):
-    #     """
-    #     Checks to see that the user can retrieve
-    #         *Therapists Name
-    #         *Appointment Time
-    #         *Appointment Duration
-    #         *Appointment Type
-    #
-    #     With Filters Applied
-    #         *Appointment specialsmsIn
-    #     """
-    #
-    #     endpoint = f'{TestConfig.API_DOMAIN}/graphql'
-    #     response = self.app.post(endpoint, json={"query": """
-    #                             {
-    #                              appointments(filters: {hasSpecialisms: ["Addiction", "ADHD", "CBT", "Divorce", "Sexuality"]}) {
-    #                                edges {
-    #                                  node {
-    #                                    therapists {
-    #                                      firstName
-    #                                      lastName
-    #                                      specialisms {
-    #                                        edges {
-    #                                          node {
-    #                                            specialismName
-    #                                          }
-    #                                        }
-    #                                      }
-    #                                    }
-    #                                    startTimeUnixSeconds
-    #                                    durationSeconds
-    #                                    type
-    #                                  }
-    #                                }
-    #                              }
-    #                            }
-    #                          """})
-    #     self.assertEqual(response.status_code, 200)
-    #
-    #     self.assertEqual(response.json, {
-    #         "data": {
-    #             "appointments": {
-    #                 "edges": [
-    #                     {
-    #                         "node": {
-    #                             "therapists": {
-    #                                 "firstName": "jane",
-    #                                 "lastName": "smith",
-    #                                 "specialisms": {
-    #                                     "edges": [
-    #                                         {
-    #                                             "node": {
-    #                                                 "specialismName": "CBT"
-    #                                             }
-    #                                         },
-    #                                         {
-    #                                             "node": {
-    #                                                 "specialismName": "Divorce"
-    #                                             }
-    #                                         },
-    #                                         {
-    #                                             "node": {
-    #                                                 "specialismName": "Sexuality"
-    #                                             }
-    #                                         }
-    #                                     ]
-    #                                 }
-    #                             },
-    #                             "startTimeUnixSeconds": 1644780000,
-    #                             "durationSeconds": 3600,
-    #                             "type": "consultation"
-    #                         }
-    #                     },
-    #                     {
-    #                         "node": {
-    #                             "therapists": {
-    #                                 "firstName": "jeff",
-    #                                 "lastName": "smith",
-    #                                 "specialisms": {
-    #                                     "edges": [
-    #                                         {
-    #                                             "node": {
-    #                                                 "specialismName": "Addiction"
-    #                                             }
-    #                                         },
-    #                                         {
-    #                                             "node": {
-    #                                                 "specialismName": "ADHD"
-    #                                             }
-    #                                         }
-    #                                     ]
-    #                                 }
-    #                             },
-    #                             "startTimeUnixSeconds": 1644747572,
-    #                             "durationSeconds": 3600,
-    #                             "type": "one-off"
-    #                         }
-    #                     }
-    #                 ]
-    #             }
-    #         }
-    #     })
-
-    @mock.patch('API.authentication.decorators._extract_header_token_value')
-    @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
+    @mock.patch('Spill_Backend_App.API.authentication.decorators._extract_header_token_value')
+    @mock.patch('Spill_Backend_App.API.authentication.decorators.verify_jwt_in_argument')
     def test_graphql_endpoint_returns_required_appointment_fields_with_all_filters(self, *args):
         """
         Checks to see that the user can retrieve
@@ -724,74 +617,16 @@ class API_Acceptance_Tests(unittest.TestCase):
             We add a few new rows to our mock data for this test to confirm that filters are "AND" filters
             and that appointments not matching the filter are ignored
 
-            assuming a single value exists for each Model field there are a total of 9 different ways a filter model can differ
+
+
 
         With Filters Applied
             *Date Range
             *Appointment Type
             *Therapist Specialism
         """
-        # Different Start Time
-        therapist_3 = API.models.Therapist(first_name="charlie", last_name="kelly")
-        specialism_3 = API.models.Specialism(specialism_name="ADHD")
-        appointment_3 = API.models.Appointment(start_time_unix_seconds=0, duration_seconds=0, type="one-off")
-        therapist_3.specialisms.append(specialism_3)
-        appointment_3.therapists = therapist_3
 
-        therapist_4 = API.models.Therapist(first_name="dennis", last_name="reynolds")
-        specialism_4 = API.models.Specialism(specialism_name="ADHD")
-        appointment_4 = API.models.Appointment(start_time_unix_seconds=1, duration_seconds=0, type="one-off")
-        therapist_4.specialisms.append(specialism_4)
-        appointment_4.therapists = therapist_4
-
-        therapist_5 = API.models.Therapist(first_name="mac", last_name="mcdonald")
-        specialism_5 = API.models.Specialism(specialism_name="ADHD")
-        appointment_5 = API.models.Appointment(start_time_unix_seconds=2, duration_seconds=0, type="one-off")
-        therapist_5.specialisms.append(specialism_5)
-        appointment_5.therapists = therapist_5
-
-        # Different specialism
-        therapist_6 = API.models.Therapist(first_name="dee", last_name="reynolds")
-        specialism_6 = API.models.Specialism(specialism_name="CBT")
-        appointment_6 = API.models.Appointment(start_time_unix_seconds=0, duration_seconds=0, type="one-off")
-        therapist_6.specialisms.append(specialism_6)
-        appointment_6.therapists = therapist_6
-
-        therapist_7 = API.models.Therapist(first_name="rickety", last_name="cricket")
-        specialism_7 = API.models.Specialism(specialism_name="CBT")
-        appointment_7 = API.models.Appointment(start_time_unix_seconds=0, duration_seconds=0, type="one-off")
-        therapist_7.specialisms.append(specialism_7)
-        appointment_7.therapists = therapist_7
-
-        therapist_8 = API.models.Therapist(first_name="luther", last_name="vandross")
-        specialism_8 = API.models.Specialism(specialism_name="CBT")
-        appointment_8 = API.models.Appointment(start_time_unix_seconds=0, duration_seconds=0, type="one-off")
-        therapist_8.specialisms.append(specialism_8)
-        appointment_8.therapists = therapist_8
-
-        # Different Type
-        therapist_9 = API.models.Therapist(first_name="frank", last_name="reynolds")
-        specialism_9 = API.models.Specialism(specialism_name="ADHD")
-        appointment_9 = API.models.Appointment(start_time_unix_seconds=0, duration_seconds=0, type="consultation")
-        therapist_9.specialisms.append(specialism_9)
-        appointment_9.therapists = therapist_9
-
-        therapist_10 = API.models.Therapist(first_name="bill", last_name="ponderosa")
-        specialism_10 = API.models.Specialism(specialism_name="ADHD")
-        appointment_10 = API.models.Appointment(start_time_unix_seconds=0, duration_seconds=0, type="consultation")
-        therapist_10.specialisms.append(specialism_10)
-        appointment_10.therapists = therapist_10
-
-        therapist_11 = API.models.Therapist(first_name="doyle", last_name="mcpoyle")
-        specialism_11 = API.models.Specialism(specialism_name="ADHD")
-        appointment_11 = API.models.Appointment(start_time_unix_seconds=0, duration_seconds=0, type="consultation")
-        therapist_11.specialisms.append(specialism_11)
-        appointment_11.therapists = therapist_11
-
-        db.session.add_all(
-            [appointment_3, appointment_4, appointment_5, appointment_6, appointment_7, appointment_8, appointment_9,
-             appointment_10, appointment_11])
-        db.session.commit
+        mock_data_generation.generate_nine_unique_appointments_for_testing_filter_combinations(db)
 
         endpoint = f'{TestConfig.API_DOMAIN}/graphql'
         response = self.app.post(endpoint, json={"query": """
@@ -824,8 +659,8 @@ class API_Acceptance_Tests(unittest.TestCase):
                            'specialisms': {'edges': [{'node': {'specialismName': 'ADHD'}}]}}, 'startTimeUnixSeconds': 0,
             'durationSeconds': 0, 'type': 'one-off'}}]}}})
 
-    @mock.patch('API.authentication.decorators._extract_header_token_value')
-    @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
+    @mock.patch('Spill_Backend_App.API.authentication.decorators._extract_header_token_value')
+    @mock.patch('Spill_Backend_App.API.authentication.decorators.verify_jwt_in_argument')
     def test_appointment_mutate_on_graphql_endpoint(self, *args):
         endpoint = f'{TestConfig.API_DOMAIN}/graphql'
         response = self.app.post(endpoint, json={"query": """
@@ -881,8 +716,8 @@ class API_Acceptance_Tests(unittest.TestCase):
             }
         })
 
-    @mock.patch('API.authentication.decorators._extract_header_token_value')
-    @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
+    @mock.patch('Spill_Backend_App.API.authentication.decorators._extract_header_token_value')
+    @mock.patch('Spill_Backend_App.API.authentication.decorators.verify_jwt_in_argument')
     def test_appointment_mutate_on_graphql_endpoint_idempotent_on_multiple_calls(self, *args):
         endpoint = f'{TestConfig.API_DOMAIN}/graphql'
         query = """

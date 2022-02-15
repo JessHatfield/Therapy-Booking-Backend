@@ -2,7 +2,7 @@ from flask import Flask
 from flask_graphql_auth import GraphQLAuth
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from API.config import Config
+from Spill_Backend_App.API.config import Config
 
 
 db = SQLAlchemy()
@@ -11,7 +11,7 @@ graph_auth = GraphQLAuth()
 
 
 def create_app(config_class=None):
-    from API.routes import bp as route_bp
+    from Spill_Backend_App.API.routes import bp as route_bp
 
     if config_class is None:
         raise ValueError("A Config Class Must Be Provided to 'create_app'")

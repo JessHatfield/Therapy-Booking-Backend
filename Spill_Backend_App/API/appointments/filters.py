@@ -1,9 +1,9 @@
 import graphene
 from graphene_sqlalchemy_filter import FilterSet
 
-from API.models import Appointment as AppointmentModel
-from API.models import Therapist as TherapistModel
-from API.models import Specialism as SpecialismModel
+from Spill_Backend_App.API.models import Appointment as AppointmentModel
+from Spill_Backend_App.API.models import Therapist as TherapistModel
+from Spill_Backend_App.API.models import Specialism as SpecialismModel
 from sqlalchemy import and_
 
 

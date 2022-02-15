@@ -2,7 +2,7 @@ import unittest
 
 from graphql import GraphQLError
 
-from API.authentication.decorators import get_token_auth_header
+from Spill_Backend_App.API.authentication.decorators import get_token_auth_header
 
 
 class Auth_Tests(unittest.TestCase):

@@ -1,4 +1,4 @@
-from API.models import User
+from Spill_Backend_App.API.models import User
 import graphene
 
 from flask_graphql_auth import create_access_token, create_refresh_token, mutation_header_jwt_refresh_token_required, \

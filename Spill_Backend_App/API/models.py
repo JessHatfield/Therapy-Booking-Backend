@@ -1,4 +1,4 @@
-from API import db
+from Spill_Backend_App.API import db
 from werkzeug.security import generate_password_hash, check_password_hash
 
 SpecialismsForTherapists = db.Table("TherapistSpecialisms",

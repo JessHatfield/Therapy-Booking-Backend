@@ -4,12 +4,12 @@ import graphene
 
 from graphene_sqlalchemy_filter import FilterableConnectionField
 
-from API.models import Appointment as AppointmentModel
+from Spill_Backend_App.API.models import Appointment as AppointmentModel
 
-from API.authentication import AuthMutation, RefreshMutation, header_must_have_jwt
-from API.appointments.schema import AppointmentsSchema
-from API.appointments.filters import AppointmentsFilter
-from API.appointments.mutations import AppointmentMutation
+from Spill_Backend_App.API.authentication import AuthMutation, RefreshMutation, header_must_have_jwt
+from Spill_Backend_App.API.appointments.schema import AppointmentsSchema
+from Spill_Backend_App.API.appointments.filters import AppointmentsFilter
+from Spill_Backend_App.API.appointments.mutations import AppointmentMutation
 
 logger = logging.getLogger(__name__)
 
