@@ -44,25 +44,14 @@ class SpecialismSchema(SQLAlchemyObjectType):
         interfaces = (graphene.relay.Node,)
 
 
-class SpecialismFilter(FilterSet):
-    class Meta:
-        model = AppointmentModel
-        fields = {
-            'specialism_name': ALL_OPERATIONS,
-        }
-
-
 class AppointmentsFilter(FilterSet):
     has_specialisms = graphene.List(of_type=graphene.String)
 
     class Meta:
         model = AppointmentModel
         fields = {
-            'appointment_id': ALL_OPERATIONS,
-            'start_time_unix_seconds': ALL_OPERATIONS,
-            'duration_seconds': ALL_OPERATIONS,
-            'therapist_id': ALL_OPERATIONS,
-            'type': ALL_OPERATIONS,
+            'start_time_unix_seconds': ['range'],
+            'type': ['eq'],
         }
 
     @classmethod
