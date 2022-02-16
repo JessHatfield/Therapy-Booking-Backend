@@ -5,6 +5,8 @@ from sentry_sdk.integrations.flask import FlaskIntegration
 import API
 import logging
 
+import mock_data_generation
+
 sentry_sdk.init(
     dsn="https://14705234ea144f8ca9c07f5b60e96d4b@o1144439.ingest.sentry.io/6208485",
     integrations=[FlaskIntegration()],
@@ -20,5 +22,11 @@ app = API.create_app(config_class=API.Config)
 logging.basicConfig(level=logging.DEBUG)
 
 
+
+
 if __name__ == "__main__":
+
+    if app.config["GENERATE_MOCK_DATA"] is True:
+        mock_data_generation.generate_fake_data_for_development_db(API.db)
+
     app.run(host='0.0.0.0',port=80)

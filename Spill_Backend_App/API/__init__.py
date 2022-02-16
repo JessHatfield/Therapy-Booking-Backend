@@ -22,4 +22,5 @@ def create_app(config_class=None):
     graph_auth.init_app(app)
     app.register_blueprint(route_bp)
 
+
     return app

@@ -75,7 +75,7 @@ def generate_nine_unique_appointments_for_testing_filter_combinations(db):
     db.session.add_all(
         [appointment_3, appointment_4, appointment_5, appointment_6, appointment_7, appointment_8, appointment_9,
          appointment_10, appointment_11])
-    db.session.commit
+    db.session.commit()
 
 
 def insert_appointments_and_therapists(db):
@@ -122,6 +122,7 @@ def generate_fake_data_for_development_db():
         db.create_all()
         insert_appointments_and_therapists(db)
         insert_api_users(db)
+        generate_nine_unique_appointments_for_testing_filter_combinations(db)
 
         print("Old Records Have Been Wiped And New Mock Records Created")
     else:
