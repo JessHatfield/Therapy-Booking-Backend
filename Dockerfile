@@ -23,7 +23,7 @@ RUN export FLASK_APP=Spill_Backend_App/app.py
 
 
 #Run the container
-CMD python -m mock_data_generation.py
+CMD yes | python -m mock_data_generation.py
 CMD [ "python", "./app.py" ]
 #CMD ls
 #CMD python -m unittest tests/route_integration_tests.py

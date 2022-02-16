@@ -29,7 +29,7 @@ class API_Integration_Tests(unittest.TestCase):
         db.drop_all()
         self.app_context.pop()
 
-    @mock.patch('API.authentication.decorators._extract_header_token_value')
+    @mock.patch('API.authentication.decorators.get_token_auth_header')
     @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
     def test_graphql_endpoint_returns_empty_query_result(self, *args):
         """
@@ -52,7 +52,7 @@ class API_Integration_Tests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json, {"data": {"appointments": {'edges': []}}})
 
-    @mock.patch('API.authentication.decorators._extract_header_token_value')
+    @mock.patch('API.authentication.decorators.get_token_auth_header')
     @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
     def test_graphql_endpoint_returns_error_response_for_non_existent_object(self, *args):
         """
@@ -65,7 +65,7 @@ class API_Integration_Tests(unittest.TestCase):
             {'message': 'Cannot query field "non_existent_object" on type "Query".',
              'locations': [{'line': 1, 'column': 7}]}]})
 
-    @mock.patch('API.authentication.decorators._extract_header_token_value')
+    @mock.patch('API.authentication.decorators.get_token_auth_header')
     @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
     def test_graphql_endpoint_returns_error_response_for_non_existent_field(self, *args):
         """
@@ -96,7 +96,7 @@ class API_Acceptance_Tests(unittest.TestCase):
         db.drop_all()
         self.app_context.pop()
 
-    @mock.patch('API.authentication.decorators._extract_header_token_value')
+    @mock.patch('API.authentication.decorators.get_token_auth_header')
     @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
     def test_graphql_endpoint_returns_required_appointment_fields(self, *args):
         """
@@ -198,7 +198,7 @@ class API_Acceptance_Tests(unittest.TestCase):
             }
         })
 
-    @mock.patch('API.authentication.decorators._extract_header_token_value')
+    @mock.patch('API.authentication.decorators.get_token_auth_header')
     @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
     def test_graphql_endpoint_returns_required_appointment_fields_with_typeEq_filter(self, *args):
         """
@@ -272,7 +272,7 @@ class API_Acceptance_Tests(unittest.TestCase):
             }
         })
 
-    @mock.patch('API.authentication.decorators._extract_header_token_value')
+    @mock.patch('API.authentication.decorators.get_token_auth_header')
     @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
     def test_graphql_endpoint_returns_required_appointment_fields_with_typeIn_filter_single_option(self, *args):
         """
@@ -346,7 +346,7 @@ class API_Acceptance_Tests(unittest.TestCase):
             }
         })
 
-    @mock.patch('API.authentication.decorators._extract_header_token_value')
+    @mock.patch('API.authentication.decorators.get_token_auth_header')
     @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
     def test_graphql_endpoint_returns_required_appointment_fields_with_typeIn_filter_multiple_options(self, *args):
         """
@@ -450,7 +450,7 @@ class API_Acceptance_Tests(unittest.TestCase):
             }
         })
 
-    @mock.patch('API.authentication.decorators._extract_header_token_value')
+    @mock.patch('API.authentication.decorators.get_token_auth_header')
     @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
     def test_graphql_endpoint_returns_required_appointment_fields_with_startTimeUnixSecondsRange_filter(self, *args):
         """
@@ -529,7 +529,7 @@ class API_Acceptance_Tests(unittest.TestCase):
             }
         })
 
-    @mock.patch('API.authentication.decorators._extract_header_token_value')
+    @mock.patch('API.authentication.decorators.get_token_auth_header')
     @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
     def test_graphql_endpoint_returns_required_appointment_fields_with_specialismsIn_filter_one_specialism(self, *args):
         """
@@ -603,7 +603,7 @@ class API_Acceptance_Tests(unittest.TestCase):
             }
         })
 
-    @mock.patch('API.authentication.decorators._extract_header_token_value')
+    @mock.patch('API.authentication.decorators.get_token_auth_header')
     @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
     def test_graphql_endpoint_returns_required_appointment_fields_with_all_filters(self, *args):
         """
@@ -658,7 +658,7 @@ class API_Acceptance_Tests(unittest.TestCase):
                            'specialisms': {'edges': [{'node': {'specialismName': 'ADHD'}}]}}, 'startTimeUnixSeconds': 0,
             'durationSeconds': 0, 'type': 'one-off'}}]}}})
 
-    @mock.patch('API.authentication.decorators._extract_header_token_value')
+    @mock.patch('API.authentication.decorators.get_token_auth_header')
     @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
     def test_appointment_mutate_on_graphql_endpoint(self, *args):
         endpoint = f'{TestConfig.API_DOMAIN}/graphql'
@@ -715,7 +715,7 @@ class API_Acceptance_Tests(unittest.TestCase):
             }
         })
 
-    @mock.patch('API.authentication.decorators._extract_header_token_value')
+    @mock.patch('API.authentication.decorators.get_token_auth_header')
     @mock.patch('API.authentication.decorators.verify_jwt_in_argument')
     def test_appointment_mutate_on_graphql_endpoint_idempotent_on_multiple_calls(self, *args):
         endpoint = f'{TestConfig.API_DOMAIN}/graphql'
@@ -916,11 +916,27 @@ class API_Acceptance_Tests(unittest.TestCase):
             }
         })
 
-    def test_unauthorized_requests_are_rejected(self):
-        """Tests that given a prexisting username and password an access token and refreshToken can be generated via graphQL Mutation
-           Value of the access token and refresh token are different each time function is called. W
-        """
+    def test_unauthorized_requests_are_rejected_missing_header(self):
+        endpoint = f'{TestConfig.API_DOMAIN}/graphql'
 
+        response = self.app.post(endpoint, json={"query": """
+                       {
+                         appointments {
+                           edges {
+                             node {
+                               startTimeUnixSeconds
+                               durationSeconds
+                             }
+                           }
+                         }
+                       }
+                """})
+
+        self.assertEqual(response.json, {'errors': [
+            {'message': "{'code': 'authorization_header_missing', 'description': 'Authorization header is expected'}",
+             'locations': [{'line': 3, 'column': 26}], 'path': ['appointments']}], 'data': {'appointments': None}})
+
+    def test_unauthorized_requests_are_rejected_invalid_token(self):
         endpoint = f'{TestConfig.API_DOMAIN}/graphql'
 
         response = self.app.post(endpoint, headers={"authorization": f"Bearer InvalidToken"}, json={"query": """
@@ -937,8 +953,8 @@ class API_Acceptance_Tests(unittest.TestCase):
              """})
 
         self.assertEqual(response.json, {'errors': [
-            {'message': 'Not enough segments', 'locations': [{'line': 3, 'column': 23}], 'path': ['appointments']}],
-            'data': {'appointments': None}})
+            {'message': "{'code': 'Invalid Token', 'description': 'Your Token Could Not Be Validated'}",
+             'locations': [{'line': 3, 'column': 23}], 'path': ['appointments']}], 'data': {'appointments': None}})
 
     def test_access_token_can_be_refreshed_and_then_the_api_queries_with_filters(self):
         # gen access token

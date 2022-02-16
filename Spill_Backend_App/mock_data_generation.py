@@ -129,4 +129,5 @@ def generate_fake_data_for_development_db():
 
 
 if __name__ == "__main__":
+    print("Running")
     generate_fake_data_for_development_db()
