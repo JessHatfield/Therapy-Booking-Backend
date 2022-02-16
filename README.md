@@ -43,29 +43,40 @@ Written using Flask, Graphene, Flask GraphQL, Graphene-SQLAlchemy, Unittest And 
 ### Suite Of Integration Tests
 * Integration Tests Confirming That Key API Functionality Has Been Met
 
+### Schema Reference Generation
+* generate_schema.py will create a GraphQL schema file for reference
+* current_api_schema.graphql shows the current schema
+
 ## Getting Started
 
 ### Fetching + Running My Docker Container
 
-1. Pull my docker container from my docker-hub repository
+1. Login into docker with your docker-hub account
+
+```console
+docker login --username spilldev
+```
+
+
+2. Pull my docker container from my docker-hub repository
 
 ```console
 docker pull joshhatfield1994/fancyorchestra:latest
 ```
 
-2. Run the docker container
+3. Run the docker container
 
 ```console
 docker run -p 80:80  joshhatfield1994/fancyorchestra:latest
 ```
 
-3. Get the name of container you have created
+4. Get the name of container you have created
 
 ```console
 docker container list
 ```
 
-4. Run our acceptance tests to confirm API is running + functioning correctly
+5. Run our acceptance tests to confirm API is running + functioning correctly
 
 ```console
 docker exec -it name-of-your-container bash run_tests.sh

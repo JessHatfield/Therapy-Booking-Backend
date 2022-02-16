@@ -1,0 +1,123 @@
+schema {
+  query: Query
+  mutation: Mutation
+}
+
+type AppointmentMutation {
+  appointment: AppointmentsSchema
+}
+
+input AppointmentsFilter {
+  startTimeUnixSecondsRange: IntRange
+  type: String
+  typeIn: [String]
+  and: [AppointmentsFilter!]
+  or: [AppointmentsFilter!]
+  not: AppointmentsFilter
+  hasSpecialisms: [String]
+}
+
+type AppointmentsSchema implements Node {
+  appointmentId: ID!
+  startTimeUnixSeconds: Int
+  durationSeconds: Int
+  type: String
+  therapistId: Int
+  therapists: TherapistsSchema
+  id: ID!
+}
+
+type AppointmentsSchemaConnection {
+  pageInfo: PageInfo!
+  edges: [AppointmentsSchemaEdge]!
+}
+
+type AppointmentsSchemaEdge {
+  node: AppointmentsSchema
+  cursor: String!
+}
+
+enum AppointmentsSchemaSortEnum {
+  APPOINTMENT_ID_ASC
+  APPOINTMENT_ID_DESC
+  START_TIME_UNIX_SECONDS_ASC
+  START_TIME_UNIX_SECONDS_DESC
+  DURATION_SECONDS_ASC
+  DURATION_SECONDS_DESC
+  TYPE_ASC
+  TYPE_DESC
+  THERAPIST_ID_ASC
+  THERAPIST_ID_DESC
+}
+
+type AuthMutation {
+  accessToken: String
+  refreshToken: String
+}
+
+input IntRange {
+  begin: Int!
+  end: Int!
+}
+
+type Mutation {
+  auth(password: String, username: String): AuthMutation
+  refresh(refreshToken: String): RefreshMutation
+  appointment(durationSeconds: Int, startTimeUnixSeconds: Int, therapistId: Int, type: String): AppointmentMutation
+}
+
+interface Node {
+  id: ID!
+}
+
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+  endCursor: String
+}
+
+type Query {
+  node(id: ID!): Node
+  appointments(filters: AppointmentsFilter, sort: [AppointmentsSchemaSortEnum] = [APPOINTMENT_ID_ASC], before: String, after: String, first: Int, last: Int): AppointmentsSchemaConnection
+}
+
+type RefreshMutation {
+  newToken: String
+}
+
+type SpecialismSchema implements Node {
+  specialismId: ID!
+  specialismName: String!
+  therapists(before: String, after: String, first: Int, last: Int): TherapistsSchemaConnection
+  id: ID!
+}
+
+type SpecialismSchemaConnection {
+  pageInfo: PageInfo!
+  edges: [SpecialismSchemaEdge]!
+}
+
+type SpecialismSchemaEdge {
+  node: SpecialismSchema
+  cursor: String!
+}
+
+type TherapistsSchema implements Node {
+  therapistId: ID!
+  firstName: String!
+  lastName: String!
+  appointments(before: String, after: String, first: Int, last: Int): AppointmentsSchemaConnection
+  specialisms(before: String, after: String, first: Int, last: Int): SpecialismSchemaConnection
+  id: ID!
+}
+
+type TherapistsSchemaConnection {
+  pageInfo: PageInfo!
+  edges: [TherapistsSchemaEdge]!
+}
+
+type TherapistsSchemaEdge {
+  node: TherapistsSchema
+  cursor: String!
+}
