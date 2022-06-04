@@ -1,6 +1,6 @@
-# Spill Backend Appointment API
+# Therapy Booking Backend Appointment API
 
-A GraphQL API for querying and creating therapy appointments. Created for the Spill Backend Tech Test
+A GraphQL API for querying and creating therapy appointments.
 
 Written using Flask, Graphene, Flask GraphQL, Graphene-SQLAlchemy, Unittest And SQLite
 
@@ -189,7 +189,7 @@ mutation {
 
 ### Why GraphQL Over REST?
 
-* I'm most familar with building REST APIs. That said given that Spill use GraphQL this seemed like a good opportunity
+* I'm most familar with building REST APIs. That said given that company A use GraphQL this seemed like a good opportunity
   to learn!
 * Using the GraphQL paradigm offers more benefits for spill vs REST where this API put into production
     * It allows for quicker iteration vs REST. Schema is auto-generated from SQLAlchemy Models and added to the Graph in
