@@ -12,7 +12,7 @@ COPY .env .
 RUN pip install -r requirements.txt
 
 #Copy the Flask app code to the working directory
-COPY Spill_Backend_App/ .
+COPY Therapy_Booking_App/ .
 
 RUN export FLASK_APP=Spill_Backend_App/app.py
 
